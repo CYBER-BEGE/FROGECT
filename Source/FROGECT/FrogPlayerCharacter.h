@@ -47,15 +47,18 @@ private:
 
 	void DoMove(float Right, float Forward);
 
-	void DoJump();
+	void DoJumpStart();
+
+	void DoJumpEnd();
 
 protected:
-	UPROPERTY(EditAnywhere, Category = "Input Action")
-	class UInputAction* JumpAction;
-
 	UPROPERTY(EditAnywhere, Category = "Input Action")
 	class UInputAction* MoveAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input Action")
 	class UInputAction* LookAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input Action")
+	class UInputAction* JumpAction;
+
 };

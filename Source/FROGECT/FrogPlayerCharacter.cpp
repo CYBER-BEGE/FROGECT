@@ -3,7 +3,7 @@
 
 #include "FrogPlayerCharacter.h"
 #include "EnhancedInputComponent.h"
-
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AFrogPlayerCharacter::AFrogPlayerCharacter()
@@ -11,6 +11,9 @@ AFrogPlayerCharacter::AFrogPlayerCharacter()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// CharacterMovement 세팅
+	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
+	GetCharacterMovement()->AirControl = 0.8f;
 }
 
 // Called when the game starts or when spawned
@@ -41,7 +44,8 @@ void AFrogPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AFrogPlayerCharacter::LookInput);
 
 		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoJump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoJumpStart);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoJumpEnd);
 	}
 }
 
@@ -81,7 +85,12 @@ void AFrogPlayerCharacter::DoLook(float Yaw, float Pitch)
 	}
 }
 
-void AFrogPlayerCharacter::DoJump()
+void AFrogPlayerCharacter::DoJumpStart()
 {
 	Jump();
+}
+
+void AFrogPlayerCharacter::DoJumpEnd()
+{
+	StopJumping();
 }
