@@ -12,8 +12,9 @@ AFrogPlayerCharacter::AFrogPlayerCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	// CharacterMovement 세팅
-	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
-	GetCharacterMovement()->AirControl = 0.8f;
+	GetCharacterMovement()->BrakingDecelerationFalling = 50.0f;
+	GetCharacterMovement()->AirControl = 0.7f;
+	GetCharacterMovement()->GravityScale = 2.0f;
 }
 
 // Called when the game starts or when spawned
@@ -21,6 +22,8 @@ void AFrogPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	GetCharacterMovement()->MaxWalkSpeed *= MoveSpeed;
+	GetCharacterMovement()->JumpZVelocity *= JumpPower;
 }
 
 // Called every frame
@@ -47,6 +50,10 @@ void AFrogPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoJumpStart);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoJumpEnd);
 	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No Enhanced Input Component!"));
+	}
 }
 
 void AFrogPlayerCharacter::MoveInput(const FInputActionValue& Value)
@@ -67,12 +74,8 @@ void AFrogPlayerCharacter::DoMove(float Right, float Forward)
 {
 	if (GetController())
 	{
-		AddMovementInput(GetActorRightVector(), Right);
-		AddMovementInput(GetActorForwardVector(), Forward);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No Controller"));
+		AddMovementInput(GetActorRightVector(), Right * MoveSpeed);
+		AddMovementInput(GetActorForwardVector(), Forward * MoveSpeed);
 	}
 }
 

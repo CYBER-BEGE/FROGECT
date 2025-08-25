@@ -26,7 +26,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-private:
+protected:
 	UPROPERTY(EditAnywhere, Category = "State")
 	float MaxHealth = 100.0f;
 
@@ -34,6 +34,9 @@ private:
 	float AttackPower = 10.0f;
 
 	UPROPERTY(EditAnywhere, Category = "State")
-	float MoveSpeed = 10.0f;
+	float MoveSpeed = 1.0f;
+
+	UPROPERTY(EditAnywhere, Category = "State")
+	float JumpPower = 1.0f;
 
 };
