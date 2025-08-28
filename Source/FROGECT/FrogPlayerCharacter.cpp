@@ -12,9 +12,9 @@ AFrogPlayerCharacter::AFrogPlayerCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	// CharacterMovement 세팅
-	GetCharacterMovement()->BrakingDecelerationFalling = 50.0f;
-	GetCharacterMovement()->AirControl = 0.7f;
-	GetCharacterMovement()->GravityScale = 2.0f;
+	GetCharacterMovement()->BrakingDecelerationFalling = 50.0f; // 공중 감속
+	GetCharacterMovement()->AirControl = 0.7f;					// 공중 제어
+	GetCharacterMovement()->GravityScale = 2.0f;				// 중력 배율
 }
 
 // Called when the game starts or when spawned
@@ -22,8 +22,8 @@ void AFrogPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GetCharacterMovement()->MaxWalkSpeed *= MoveSpeed;
-	GetCharacterMovement()->JumpZVelocity *= JumpPower;
+	GetCharacterMovement()->MaxWalkSpeed *= MoveSpeed;			// 이동 속도
+	GetCharacterMovement()->JumpZVelocity *= JumpPower;			// 점프 힘
 }
 
 // Called every frame
@@ -48,7 +48,7 @@ void AFrogPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoJumpStart);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoJumpEnd);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AFrogPlayerCharacter::DoJumpEnd);
 	}
 	else
 	{
