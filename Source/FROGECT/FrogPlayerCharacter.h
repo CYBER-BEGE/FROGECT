@@ -40,16 +40,16 @@ private:
 	bool HasHook = false;
 
 	void MoveInput(const struct FInputActionValue& Value);
-
 	void LookInput(const struct FInputActionValue& Value);
 
+	void DoMove(float Right, float Forward);
 	void DoLook(float Yaw, float Pitch);
 
-	void DoMove(float Right, float Forward);
-
 	void DoJumpStart();
-
 	void DoJumpEnd();
+
+	void DoCrouchStart();
+	void DoCrouchEnd();
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Input Action")
@@ -60,5 +60,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Input Action")
 	class UInputAction* JumpAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input Action")
+	class UInputAction* CrouchAction;
 
 };
