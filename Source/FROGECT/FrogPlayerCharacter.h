@@ -40,19 +40,15 @@ private:
 	bool HasHook = false;
 
 	void MoveInput(const struct FInputActionValue& Value);
-
 	void LookInput(const struct FInputActionValue& Value);
 
+	void DoMove(float Right, float Forward);
 	void DoLook(float Yaw, float Pitch);
 
-	void DoMove(float Right, float Forward);
-
 	void DoJumpStart();
-
 	void DoJumpEnd();
 
 	void DoCrouchStart();
-
 	void DoCrouchEnd();
 
 protected:

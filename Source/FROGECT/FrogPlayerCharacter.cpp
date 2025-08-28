@@ -11,10 +11,6 @@ AFrogPlayerCharacter::AFrogPlayerCharacter()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// CharacterMovement 세팅
-	GetCharacterMovement()->BrakingDecelerationFalling = 50.0f; // 공중 감속
-	GetCharacterMovement()->AirControl = 0.7f;					// 공중 제어
-	GetCharacterMovement()->GravityScale = 2.0f;				// 중력 배율
 }
 
 // Called when the game starts or when spawned
@@ -22,8 +18,19 @@ void AFrogPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GetCharacterMovement()->MaxWalkSpeed *= MoveSpeed;			// 이동 속도
-	GetCharacterMovement()->JumpZVelocity *= JumpPower;			// 점프 힘
+	// CharacterMovement 세팅
+	GetCharacterMovement()->BrakingDecelerationFalling = 50.0f;				// 공중 감속력
+	GetCharacterMovement()->AirControl = 0.7f;								// 공중 제어
+	GetCharacterMovement()->GravityScale = 2.0f;							// 중력 배율
+
+	GetCharacterMovement()->GroundFriction = 8.0f;							// 마찰력
+	GetCharacterMovement()->BrakingDecelerationWalking = 2048.0f;			// 감속력
+
+	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;	// 웅크리기 가능
+	GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;			// 웅크리고 턱을 내려가기 가능
+
+	GetCharacterMovement()->MaxWalkSpeed *= MoveSpeed;						// 이동 속도
+	GetCharacterMovement()->JumpZVelocity *= JumpPower;						// 점프 힘
 }
 
 // Called every frame
@@ -105,9 +112,22 @@ void AFrogPlayerCharacter::DoJumpEnd()
 void AFrogPlayerCharacter::DoCrouchStart()
 {
 	Crouch();
+	
+	if (!GetCharacterMovement()->Velocity.IsNearlyZero()) // 이동 중일 때만 슬라이딩
+	{
+		FVector SlideImpulse = GetActorForwardVector() * 800.0f * MoveSpeed;
+		LaunchCharacter(SlideImpulse, true, false); // 수평 방향으로만 임펄스 적용
+
+		GetCharacterMovement()->GroundFriction = 0.0f;
+		GetCharacterMovement()->BrakingDecelerationWalking = 466.0f * MoveSpeed;
+	}
 }
 
 void AFrogPlayerCharacter::DoCrouchEnd()
 {
 	UnCrouch();
+
+	// 본래 마찰력/감속력 복구
+	GetCharacterMovement()->GroundFriction = 8.0f;
+	GetCharacterMovement()->BrakingDecelerationWalking = 2048.0f;
 }
