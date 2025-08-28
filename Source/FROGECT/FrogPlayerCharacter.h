@@ -51,6 +51,10 @@ private:
 
 	void DoJumpEnd();
 
+	void DoCrouchStart();
+
+	void DoCrouchEnd();
+
 protected:
 	UPROPERTY(EditAnywhere, Category = "Input Action")
 	class UInputAction* MoveAction;
@@ -60,5 +64,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Input Action")
 	class UInputAction* JumpAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input Action")
+	class UInputAction* CrouchAction;
 
 };

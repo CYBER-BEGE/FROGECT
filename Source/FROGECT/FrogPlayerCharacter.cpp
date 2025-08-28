@@ -49,6 +49,10 @@ void AFrogPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoJumpStart);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AFrogPlayerCharacter::DoJumpEnd);
+
+		// Crouch
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoCrouchStart);
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AFrogPlayerCharacter::DoCrouchEnd);
 	}
 	else
 	{
@@ -96,4 +100,14 @@ void AFrogPlayerCharacter::DoJumpStart()
 void AFrogPlayerCharacter::DoJumpEnd()
 {
 	StopJumping();
+}
+
+void AFrogPlayerCharacter::DoCrouchStart()
+{
+	Crouch();
+}
+
+void AFrogPlayerCharacter::DoCrouchEnd()
+{
+	UnCrouch();
 }
