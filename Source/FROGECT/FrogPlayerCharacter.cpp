@@ -38,6 +38,7 @@ void AFrogPlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	UE_LOG(LogTemp, Warning, TEXT("Velocity: %s"), *GetCharacterMovement()->Velocity.ToString());
 }
 
 // Called to bind functionality to input
@@ -113,9 +114,10 @@ void AFrogPlayerCharacter::DoCrouchStart()
 {
 	Crouch();
 	
-	if (!GetCharacterMovement()->Velocity.IsNearlyZero()) // 이동 중일 때만 슬라이딩
+	if (!GetCharacterMovement()->Velocity.IsNearlyZero() && !GetCharacterMovement()->IsFalling()) // 정지/공중이 아닐 시 슬라이딩
 	{
-		FVector SlideImpulse = GetActorForwardVector() * 800.0f * MoveSpeed;
+		FVector SlideDir = GetCharacterMovement()->Velocity.GetSafeNormal2D(); // XY벡터에서 방향만 추출
+		FVector SlideImpulse = SlideDir * 800.0f * MoveSpeed;
 		LaunchCharacter(SlideImpulse, true, false); // 수평 방향으로만 임펄스 적용
 
 		GetCharacterMovement()->GroundFriction = 0.0f;
