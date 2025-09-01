@@ -51,6 +51,14 @@ private:
 	void DoCrouchStart();
 	void DoCrouchEnd();
 
+	void DoDashStart();
+	void DoDashEnd();
+
+	FVector2D MovementVector;
+
+	FTimerHandle DashTimerHandle; // 대시 타이머 핸들
+	bool bIsDashing = false; // 대시 중인지 여부
+
 protected:
 	UPROPERTY(EditAnywhere, Category = "Input Action")
 	class UInputAction* MoveAction;
@@ -64,4 +72,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input Action")
 	class UInputAction* CrouchAction;
 
+	UPROPERTY(EditAnywhere, Category = "Input Action")
+	class UInputAction* DashAction;
 };

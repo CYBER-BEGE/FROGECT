@@ -61,6 +61,9 @@ void AFrogPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 		// Crouch
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoCrouchStart);
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AFrogPlayerCharacter::DoCrouchEnd);
+
+		// Dash
+		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Triggered, this, &AFrogPlayerCharacter::DoDashStart);
 	}
 	else
 	{
@@ -70,7 +73,7 @@ void AFrogPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 void AFrogPlayerCharacter::MoveInput(const FInputActionValue& Value)
 {
-	FVector2D MovementVector = Value.Get<FVector2D>();
+	MovementVector = Value.Get<FVector2D>();
 
 	DoMove(MovementVector.X, MovementVector.Y);
 }
@@ -132,4 +135,39 @@ void AFrogPlayerCharacter::DoCrouchEnd()
 	// 본래 마찰력/감속력 복구
 	GetCharacterMovement()->GroundFriction = 8.0f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2048.0f;
+}
+
+void AFrogPlayerCharacter::DoDashStart() // 카메라 바라보는 방향으로 대시, 대시 딜레이 추가
+{
+	if (bIsDashing || MovementVector.IsNearlyZero()) return;
+
+	FRotator CameraRot = Controller->GetControlRotation(); // 카메라 회전값
+
+	// 카메라 Forward / Right 벡터
+	FVector ForwardDir = FRotationMatrix(CameraRot).GetUnitAxis(EAxis::X);
+	FVector RightDir = FRotationMatrix(CameraRot).GetUnitAxis(EAxis::Y);
+	FVector DashDir = (ForwardDir * MovementVector.Y + RightDir * MovementVector.X).GetSafeNormal();
+
+	GetCharacterMovement()->GravityScale = 0.0f;				// 중력 0
+	GetCharacterMovement()->Velocity = FVector::ZeroVector;		// 속도 0
+	MoveSpeed = 0.0f;											// movespeed 0
+
+	GetCharacterMovement()->GroundFriction = 0.0f;				// 마찰력 0
+	GetCharacterMovement()->BrakingDecelerationWalking = 0.0f;	// 감속력 0
+
+	LaunchCharacter(DashDir * 2000.0f, true, true); // 임펄스 적용
+
+	GetWorldTimerManager().SetTimer(DashTimerHandle, this, &AFrogPlayerCharacter::DoDashEnd, 0.2f, false);
+	bIsDashing = true;
+}
+
+void AFrogPlayerCharacter::DoDashEnd()
+{
+	GetCharacterMovement()->GravityScale = 2.0f;
+	MoveSpeed = 1.5f;
+	GetCharacterMovement()->GroundFriction = 8.0f;
+	GetCharacterMovement()->BrakingDecelerationWalking = 2048.0f;
+	GetCharacterMovement()->Velocity = FVector::ZeroVector;		// 속도 0
+
+	bIsDashing = false;
 }
