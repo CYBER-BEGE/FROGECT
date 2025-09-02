@@ -38,7 +38,7 @@ void AFrogPlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	UE_LOG(LogTemp, Warning, TEXT("Velocity: %s"), *GetCharacterMovement()->Velocity.ToString());
+	//UE_LOG(LogTemp, Warning, TEXT("Velocity: %s"), *GetCharacterMovement()->Velocity.ToString());
 }
 
 // Called to bind functionality to input
@@ -63,7 +63,7 @@ void AFrogPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AFrogPlayerCharacter::DoCrouchEnd);
 
 		// Dash
-		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Triggered, this, &AFrogPlayerCharacter::DoDashStart);
+		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoDashStart);
 	}
 	else
 	{
@@ -137,9 +137,10 @@ void AFrogPlayerCharacter::DoCrouchEnd()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2048.0f;
 }
 
-void AFrogPlayerCharacter::DoDashStart() // 카메라 바라보는 방향으로 대시, 대시 딜레이 추가
+void AFrogPlayerCharacter::DoDashStart()
 {
-	if (bIsDashing || MovementVector.IsNearlyZero()) return;
+	if (!bCanDash || bIsDashing) return;
+	if (MovementVector.IsNearlyZero()) return;
 
 	FRotator CameraRot = Controller->GetControlRotation(); // 카메라 회전값
 
@@ -148,10 +149,9 @@ void AFrogPlayerCharacter::DoDashStart() // 카메라 바라보는 방향으로 
 	FVector RightDir = FRotationMatrix(CameraRot).GetUnitAxis(EAxis::Y);
 	FVector DashDir = (ForwardDir * MovementVector.Y + RightDir * MovementVector.X).GetSafeNormal();
 
+	MoveSpeed = 0.0f;											// movespeed 0
 	GetCharacterMovement()->GravityScale = 0.0f;				// 중력 0
 	GetCharacterMovement()->Velocity = FVector::ZeroVector;		// 속도 0
-	MoveSpeed = 0.0f;											// movespeed 0
-
 	GetCharacterMovement()->GroundFriction = 0.0f;				// 마찰력 0
 	GetCharacterMovement()->BrakingDecelerationWalking = 0.0f;	// 감속력 0
 
@@ -159,15 +159,38 @@ void AFrogPlayerCharacter::DoDashStart() // 카메라 바라보는 방향으로 
 
 	GetWorldTimerManager().SetTimer(DashTimerHandle, this, &AFrogPlayerCharacter::DoDashEnd, 0.2f, false);
 	bIsDashing = true;
+	bCanDash = false;
 }
 
 void AFrogPlayerCharacter::DoDashEnd()
 {
+	GetCharacterMovement()->Velocity = FVector::ZeroVector;		// 대시 정지
 	GetCharacterMovement()->GravityScale = 2.0f;
-	MoveSpeed = 1.5f;
 	GetCharacterMovement()->GroundFriction = 8.0f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2048.0f;
-	GetCharacterMovement()->Velocity = FVector::ZeroVector;		// 속도 0
+	MoveSpeed = 1.5f;
 
 	bIsDashing = false;
+
+	if (!GetCharacterMovement()->IsFalling())
+	{
+		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &AFrogPlayerCharacter::DashCooldown, 0.5f, false);
+	}
+}
+
+void AFrogPlayerCharacter::DashCooldown()
+{
+	bCanDash = true;
+}
+
+void AFrogPlayerCharacter::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+	
+	UE_LOG(LogTemp, Warning, TEXT("Landed"));
+
+	if (!bCanDash && !bIsDashing)
+	{
+		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &AFrogPlayerCharacter::DashCooldown, 0.5f, false);
+	}
 }

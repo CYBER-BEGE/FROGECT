@@ -53,11 +53,13 @@ private:
 
 	void DoDashStart();
 	void DoDashEnd();
+	void DashCooldown();
 
 	FVector2D MovementVector;
 
-	FTimerHandle DashTimerHandle; // 대시 타이머 핸들
-	bool bIsDashing = false; // 대시 중인지 여부
+	FTimerHandle DashTimerHandle;	// 대시 타이머 핸들
+	bool bIsDashing = false;		// 대시 중인지 여부
+	bool bCanDash = true;			// 대시 가능 여부
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Input Action")
@@ -74,4 +76,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Input Action")
 	class UInputAction* DashAction;
+
+	void Landed(const FHitResult& Hit) override;
 };
