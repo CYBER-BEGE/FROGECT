@@ -29,8 +29,8 @@ void AFrogPlayerCharacter::BeginPlay()
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;	// 웅크리기 가능
 	GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;			// 웅크리고 턱을 내려가기 가능
 
-	GetCharacterMovement()->MaxWalkSpeed *= MoveSpeed;						// 이동 속도
-	GetCharacterMovement()->JumpZVelocity *= JumpPower;						// 점프 힘
+	GetCharacterMovement()->MaxWalkSpeed *= MoveSpeedScale;					// 이동 속도
+	GetCharacterMovement()->JumpZVelocity *= JumpPowerScale;				// 점프 힘
 }
 
 // Called every frame
@@ -89,8 +89,8 @@ void AFrogPlayerCharacter::DoMove(float Right, float Forward)
 {
 	if (GetController())
 	{
-		AddMovementInput(GetActorRightVector(), Right * MoveSpeed);
-		AddMovementInput(GetActorForwardVector(), Forward * MoveSpeed);
+		AddMovementInput(GetActorRightVector(), Right * MoveSpeedScale);
+		AddMovementInput(GetActorForwardVector(), Forward * MoveSpeedScale);
 	}
 }
 
@@ -120,11 +120,12 @@ void AFrogPlayerCharacter::DoCrouchStart()
 	if (!GetCharacterMovement()->Velocity.IsNearlyZero() && !GetCharacterMovement()->IsFalling()) // 정지/공중이 아닐 시 슬라이딩
 	{
 		FVector SlideDir = GetCharacterMovement()->Velocity.GetSafeNormal2D(); // XY벡터에서 방향만 추출
-		FVector SlideImpulse = SlideDir * 800.0f * MoveSpeed;
+		FVector SlideImpulse = SlideDir * 800.0f * MoveSpeedScale;
+
 		LaunchCharacter(SlideImpulse, true, false); // 수평 방향으로만 임펄스 적용
 
-		GetCharacterMovement()->GroundFriction = 0.0f;
-		GetCharacterMovement()->BrakingDecelerationWalking = 466.0f * MoveSpeed;
+		GetCharacterMovement()->GroundFriction = 0.0f; // 마찰력 0
+		GetCharacterMovement()->BrakingDecelerationWalking = 466.0f * MoveSpeedScale; // 감속력 감소
 	}
 }
 
@@ -132,47 +133,41 @@ void AFrogPlayerCharacter::DoCrouchEnd()
 {
 	UnCrouch();
 
-	// 본래 마찰력/감속력 복구
-	GetCharacterMovement()->GroundFriction = 8.0f;
-	GetCharacterMovement()->BrakingDecelerationWalking = 2048.0f;
+	ResetMovementComps(); // 본래 마찰력/감속력 복구
 }
 
 void AFrogPlayerCharacter::DoDashStart()
 {
-	if (!bCanDash || bIsDashing) return;
-	if (MovementVector.IsNearlyZero()) return;
+	if (!bCanDash || bIsDashing) return;		// 대시 불가능/대시 중일 시 종료
+	if (MovementVector.IsNearlyZero()) return;	// 이동 입력이 없을 시 종료
+
+	bIsDashing = true;
+	bCanDash = false;
 
 	FRotator CameraRot = Controller->GetControlRotation(); // 카메라 회전값
-
-	// 카메라 Forward / Right 벡터
 	FVector ForwardDir = FRotationMatrix(CameraRot).GetUnitAxis(EAxis::X);
 	FVector RightDir = FRotationMatrix(CameraRot).GetUnitAxis(EAxis::Y);
 	FVector DashDir = (ForwardDir * MovementVector.Y + RightDir * MovementVector.X).GetSafeNormal();
 
-	MoveSpeed = 0.0f;											// movespeed 0
-	GetCharacterMovement()->GravityScale = 0.0f;				// 중력 0
-	GetCharacterMovement()->Velocity = FVector::ZeroVector;		// 속도 0
-	GetCharacterMovement()->GroundFriction = 0.0f;				// 마찰력 0
-	GetCharacterMovement()->BrakingDecelerationWalking = 0.0f;	// 감속력 0
-
 	LaunchCharacter(DashDir * 2000.0f, true, true); // 임펄스 적용
 
+	GetCharacterMovement()->Velocity = FVector::ZeroVector;		// 이동 정지
+	GetCharacterMovement()->GravityScale = 0.0f;				// 중력 0
+	GetCharacterMovement()->GroundFriction = 0.0f;				// 마찰력 0
+	GetCharacterMovement()->BrakingDecelerationWalking = 0.0f;	// 감속력 0
+	GetCharacterMovement()->MaxWalkSpeed = 0.0f;				// 이동 속도 0
+
 	GetWorldTimerManager().SetTimer(DashTimerHandle, this, &AFrogPlayerCharacter::DoDashEnd, 0.2f, false);
-	bIsDashing = true;
-	bCanDash = false;
 }
 
 void AFrogPlayerCharacter::DoDashEnd()
 {
-	GetCharacterMovement()->Velocity = FVector::ZeroVector;		// 대시 정지
-	GetCharacterMovement()->GravityScale = 2.0f;
-	GetCharacterMovement()->GroundFriction = 8.0f;
-	GetCharacterMovement()->BrakingDecelerationWalking = 2048.0f;
-	MoveSpeed = 1.5f;
-
 	bIsDashing = false;
 
-	if (!GetCharacterMovement()->IsFalling())
+	GetCharacterMovement()->Velocity = FVector::ZeroVector;	// 대시 정지
+	ResetMovementComps(); // 본래 속도/중력/마찰력/감속력 복구
+
+	if (!GetCharacterMovement()->IsFalling()) // 점프 중이 아닐 시
 	{
 		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &AFrogPlayerCharacter::DashCooldown, 0.5f, false);
 	}
@@ -186,11 +181,17 @@ void AFrogPlayerCharacter::DashCooldown()
 void AFrogPlayerCharacter::Landed(const FHitResult& Hit)
 {
 	Super::Landed(Hit);
-	
-	UE_LOG(LogTemp, Warning, TEXT("Landed"));
 
-	if (!bCanDash && !bIsDashing)
+	if (!bCanDash && !bIsDashing) // 대시 가능/대시 중이 아닐 시
 	{
 		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &AFrogPlayerCharacter::DashCooldown, 0.5f, false);
 	}
+}
+
+void AFrogPlayerCharacter::ResetMovementComps()
+{
+	GetCharacterMovement()->MaxWalkSpeed = 600.0f * MoveSpeedScale;	// 속도
+	GetCharacterMovement()->GravityScale = 2.0f;					// 중력
+	GetCharacterMovement()->GroundFriction = 8.0f;					// 마찰력
+	GetCharacterMovement()->BrakingDecelerationWalking = 2048.0f;	// 감속력
 }

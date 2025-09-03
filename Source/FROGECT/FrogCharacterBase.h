@@ -34,9 +34,9 @@ protected:
 	float AttackPower = 10.0f;
 
 	UPROPERTY(EditAnywhere, Category = "State")
-	float MoveSpeed = 1.0f;
+	float MoveSpeedScale = 1.0f;
 
 	UPROPERTY(EditAnywhere, Category = "State")
-	float JumpPower = 1.0f;
+	float JumpPowerScale = 1.0f;
 
 };

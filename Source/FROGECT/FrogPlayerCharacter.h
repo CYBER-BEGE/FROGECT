@@ -55,7 +55,9 @@ private:
 	void DoDashEnd();
 	void DashCooldown();
 
-	FVector2D MovementVector;
+	void ResetMovementComps();
+
+	FVector2D MovementVector;		// 인풋 받은 이동 벡터
 
 	FTimerHandle DashTimerHandle;	// 대시 타이머 핸들
 	bool bIsDashing = false;		// 대시 중인지 여부
