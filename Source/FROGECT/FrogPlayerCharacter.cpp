@@ -4,6 +4,8 @@
 #include "FrogPlayerCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "FrogProjectile.h"
 
 // Sets default values
 AFrogPlayerCharacter::AFrogPlayerCharacter()
@@ -11,6 +13,8 @@ AFrogPlayerCharacter::AFrogPlayerCharacter()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	HookSpawnPoint = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Hook Spawn Point"));
+	HookSpawnPoint->SetupAttachment(GetMesh());
 }
 
 // Called when the game starts or when spawned
@@ -64,6 +68,10 @@ void AFrogPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 		// Dash
 		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoDashStart);
+
+		// Hook
+		EnhancedInputComponent->BindAction(HookAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoHookStart);
+		EnhancedInputComponent->BindAction(HookAction, ETriggerEvent::Completed, this, &AFrogPlayerCharacter::DoHookEnd);
 	}
 	else
 	{
@@ -138,6 +146,7 @@ void AFrogPlayerCharacter::DoCrouchEnd()
 
 void AFrogPlayerCharacter::DoDashStart()
 {
+	//if (!HasJetpack) return;					// 제트팩 없을 시 종료
 	if (!bCanDash || bIsDashing) return;		// 대시 불가능/대시 중일 시 종료
 	if (MovementVector.IsNearlyZero()) return;	// 이동 입력이 없을 시 종료
 
@@ -185,6 +194,33 @@ void AFrogPlayerCharacter::Landed(const FHitResult& Hit)
 	if (!bCanDash && !bIsDashing) // 대시 가능/대시 중이 아닐 시
 	{
 		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &AFrogPlayerCharacter::DashCooldown, 0.5f, false);
+	}
+}
+
+void AFrogPlayerCharacter::DoHookStart()
+{
+	//if (!HasHook) return;
+
+	UE_LOG(LogTemp, Warning, TEXT("Hook Start"));
+
+	FVector Location = HookSpawnPoint->GetComponentLocation();
+	FRotator Rotation = HookSpawnPoint->GetComponentRotation();
+
+	HookProjectileInstance = GetWorld()->SpawnActor<AFrogProjectile>(HookProjectileClass, Location, Rotation);
+	if (HookProjectileInstance)
+		HookProjectileInstance->SetOwner(this);
+}
+
+void AFrogPlayerCharacter::DoHookEnd()
+{
+	//if (!HasHook) return;
+	
+	UE_LOG(LogTemp, Warning, TEXT("Hook End"));
+
+	if (HookProjectileInstance && HookProjectileInstance->IsValidLowLevel())
+	{
+		HookProjectileInstance->DestroyProjectile();
+		HookProjectileInstance = nullptr; // 참조 정리
 	}
 }
 

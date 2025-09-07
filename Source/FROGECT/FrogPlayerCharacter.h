@@ -30,13 +30,22 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
-	UPROPERTY(EditAnywhere, Category = "HasItem")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item", meta = (AllowPrivateAccess = "true"))
+	USceneComponent* HookSpawnPoint;
+
+	UPROPERTY(EditAnywhere, Category = "Item")
+	TSubclassOf<class AFrogProjectile> HookProjectileClass;
+
+	UPROPERTY()
+	AFrogProjectile* HookProjectileInstance;
+
+	UPROPERTY(EditAnywhere, Category = "Item")
 	bool HasSword = false;
 
-	UPROPERTY(EditAnywhere, Category = "HasItem")
+	UPROPERTY(EditAnywhere, Category = "Item")
 	bool HasJetpack = false;
 
-	UPROPERTY(EditAnywhere, Category = "HasItem")
+	UPROPERTY(EditAnywhere, Category = "Item")
 	bool HasHook = false;
 
 	void MoveInput(const struct FInputActionValue& Value);
@@ -54,6 +63,9 @@ private:
 	void DoDashStart();
 	void DoDashEnd();
 	void DashCooldown();
+
+	void DoHookStart();
+	void DoHookEnd();
 
 	void ResetMovementComps();
 
@@ -78,6 +90,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Input Action")
 	class UInputAction* DashAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input Action")
+	class UInputAction* HookAction;
 
 	void Landed(const FHitResult& Hit) override;
 };
