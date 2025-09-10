@@ -39,4 +39,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "State")
 	float JumpPowerScale = 1.0f;
 
+private:
+	void DamageTaken(float DamageAmount);
 };

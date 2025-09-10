@@ -57,6 +57,8 @@ private:
 
 	void ResetMovementComps();
 
+	void DoAttack();
+
 	FVector2D MovementVector;		// 인풋 받은 이동 벡터
 
 	FTimerHandle DashTimerHandle;	// 대시 타이머 핸들
@@ -78,6 +80,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Input Action")
 	class UInputAction* DashAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input Action")
+	class UInputAction* AttackAction;
 
 	void Landed(const FHitResult& Hit) override;
 };

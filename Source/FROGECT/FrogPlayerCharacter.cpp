@@ -64,6 +64,9 @@ void AFrogPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 		// Dash
 		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoDashStart);
+
+		// Attack
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoAttack);
 	}
 	else
 	{
@@ -194,4 +197,11 @@ void AFrogPlayerCharacter::ResetMovementComps()
 	GetCharacterMovement()->GravityScale = 2.0f;					// 중력
 	GetCharacterMovement()->GroundFriction = 8.0f;					// 마찰력
 	GetCharacterMovement()->BrakingDecelerationWalking = 2048.0f;	// 감속력
+}
+
+void AFrogPlayerCharacter::DoAttack()
+{
+	if (!HasSword) return;
+
+	
 }

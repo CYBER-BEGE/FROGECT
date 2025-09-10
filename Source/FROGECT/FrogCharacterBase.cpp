@@ -32,3 +32,8 @@ void AFrogCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 }
 
+void AFrogCharacterBase::DamageTaken(float DamageAmount)
+{
+
+}
+
