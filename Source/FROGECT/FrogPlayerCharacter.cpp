@@ -6,6 +6,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "FrogProjectile.h"
+#include "FrogGrapplingHook.h"
 
 // Sets default values
 AFrogPlayerCharacter::AFrogPlayerCharacter()
@@ -203,12 +204,36 @@ void AFrogPlayerCharacter::DoHookStart()
 
 	UE_LOG(LogTemp, Warning, TEXT("Hook Start"));
 
+	FRotator Rotation = Controller->GetControlRotation();
 	FVector Location = HookSpawnPoint->GetComponentLocation();
-	FRotator Rotation = HookSpawnPoint->GetComponentRotation();
 
-	HookProjectileInstance = GetWorld()->SpawnActor<AFrogProjectile>(HookProjectileClass, Location, Rotation);
-	if (HookProjectileInstance)
-		HookProjectileInstance->SetOwner(this);
+	GrapplingHookInstance = GetWorld()->SpawnActor<AFrogGrapplingHook>(GrapplingHookClass, Location, Rotation);
+
+	if (GrapplingHookInstance)
+	{
+		GrapplingHookInstance->SetOwner(this); // 소유자 설정
+
+		// 케이블 시작점 → 캐릭터의 HookSpawnPoint
+		GrapplingHookInstance->HookCable->AttachToComponent(
+			HookSpawnPoint,
+			FAttachmentTransformRules::KeepRelativeTransform
+		);
+		GrapplingHookInstance->HookCable->bAttachStart = true;
+
+		// 케이블 끝점 → GrapplingHookInstance (Projectile)
+		// 케이블 끝점을 훅의 RootComponent에 직접 Attach
+		GrapplingHookInstance->HookCable->EndLocation = FVector::ZeroVector;
+		GrapplingHookInstance->HookCable->SetAttachEndToComponent(
+			GrapplingHookInstance->GetRootComponent()
+		);
+		GrapplingHookInstance->HookCable->bAttachEnd = true;
+
+		// 디버깅 로그
+		UE_LOG(LogTemp, Warning, TEXT("Cable Start = %s"),
+			*GetNameSafe(HookSpawnPoint));
+		UE_LOG(LogTemp, Warning, TEXT("Cable End = %s"),
+			*GetNameSafe(GrapplingHookInstance));
+	}
 }
 
 void AFrogPlayerCharacter::DoHookEnd()
@@ -217,10 +242,10 @@ void AFrogPlayerCharacter::DoHookEnd()
 	
 	UE_LOG(LogTemp, Warning, TEXT("Hook End"));
 
-	if (HookProjectileInstance && HookProjectileInstance->IsValidLowLevel())
+	if (GrapplingHookInstance && GrapplingHookInstance->IsValidLowLevel())
 	{
-		HookProjectileInstance->DestroyProjectile();
-		HookProjectileInstance = nullptr; // 참조 정리
+		GrapplingHookInstance->DestroyProjectile();
+		GrapplingHookInstance = nullptr; // 참조 정리
 	}
 }
 

@@ -34,10 +34,10 @@ private:
 	USceneComponent* HookSpawnPoint;
 
 	UPROPERTY(EditAnywhere, Category = "Item")
-	TSubclassOf<class AFrogProjectile> HookProjectileClass;
+	TSubclassOf<class AFrogGrapplingHook> GrapplingHookClass;
 
 	UPROPERTY()
-	AFrogProjectile* HookProjectileInstance;
+	AFrogGrapplingHook* GrapplingHookInstance;
 
 	UPROPERTY(EditAnywhere, Category = "Item")
 	bool HasSword = false;
