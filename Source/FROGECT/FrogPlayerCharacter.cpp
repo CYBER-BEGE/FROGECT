@@ -223,7 +223,7 @@ void AFrogPlayerCharacter::DoAttackStart()
 	UE_LOG(LogTemp, Display, TEXT("Has SWORD, LEFT MOUSE CLICK"));
 
 	//AttackComponent에서 콜라이더 ON 함수 호출
-	DamageComponent->EnableCollision
+	DamageComponent->EnableCollision();
 	
 
 	//AttackComp의 콜리전 결과 가져오기 => Owner는 무시

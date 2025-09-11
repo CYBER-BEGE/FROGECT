@@ -28,4 +28,8 @@ public:
 	class UFrogDamageComponent* FrogDamageComponent;
 
 	void test();
+
+protected:
+	UPROPERTY(EditAnywhere, Category = "State")
+	float AttackPower = 10.0f;
 };

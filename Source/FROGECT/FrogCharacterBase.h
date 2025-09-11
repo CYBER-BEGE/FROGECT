@@ -31,9 +31,6 @@ protected:
 	float MaxHealth = 100.0f;
 
 	UPROPERTY(EditAnywhere, Category = "State")
-	float AttackPower = 10.0f;
-
-	UPROPERTY(EditAnywhere, Category = "State")
 	float MoveSpeedScale = 1.0f;
 
 	UPROPERTY(EditAnywhere, Category = "State")
