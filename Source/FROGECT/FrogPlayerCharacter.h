@@ -57,13 +57,16 @@ private:
 
 	void ResetMovementComps();
 
-	void DoAttack();
-
 	FVector2D MovementVector;		// 인풋 받은 이동 벡터
 
 	FTimerHandle DashTimerHandle;	// 대시 타이머 핸들
 	bool bIsDashing = false;		// 대시 중인지 여부
 	bool bCanDash = true;			// 대시 가능 여부
+
+	class UFrogDamageComponent* DamageComponent;
+
+	void DoAttackStart();
+	void DoAttackEnd();
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Input Action")
@@ -85,4 +88,10 @@ protected:
 	class UInputAction* AttackAction;
 
 	void Landed(const FHitResult& Hit) override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	
+	TSubclassOf<class AFrogWeaponBase> WeaponClass;
+	class AFrogWeaponBase* Weapon;
+
 };

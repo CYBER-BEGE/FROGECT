@@ -3,6 +3,8 @@
 
 #include "FrogPlayerCharacter.h"
 #include "EnhancedInputComponent.h"
+#include "FrogWeaponBase.h"
+#include "FrogDamageComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
@@ -31,6 +33,20 @@ void AFrogPlayerCharacter::BeginPlay()
 
 	GetCharacterMovement()->MaxWalkSpeed *= MoveSpeedScale;					// 이동 속도
 	GetCharacterMovement()->JumpZVelocity *= JumpPowerScale;				// 점프 힘
+
+	if (WeaponClass)
+	{
+		// Weapon 스폰
+		Weapon = GetWorld()->SpawnActor<AFrogWeaponBase>(WeaponClass);
+		
+		if (!DamageComponent)
+		{
+			DamageComponent = Weapon->FrogDamageComponent;
+			UE_LOG(LogTemp, Log, TEXT("데미지컴포넌트 할당"));
+		}
+		else UE_LOG(LogTemp, Log, TEXT("데미지컴포넌트 있음"));
+	}
+
 }
 
 // Called every frame
@@ -66,7 +82,7 @@ void AFrogPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoDashStart);
 
 		// Attack
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoAttack);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoAttackStart);
 	}
 	else
 	{
@@ -199,9 +215,26 @@ void AFrogPlayerCharacter::ResetMovementComps()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2048.0f;	// 감속력
 }
 
-void AFrogPlayerCharacter::DoAttack()
+void AFrogPlayerCharacter::DoAttackStart()
 {
 	if (!HasSword) return;
+	//공격 가능상태인지 확인하는 bool 변수 체크
 
+	UE_LOG(LogTemp, Display, TEXT("Has SWORD, LEFT MOUSE CLICK"));
+
+	//AttackComponent에서 콜라이더 ON 함수 호출
+	DamageComponent->EnableCollision
 	
+
+	//AttackComp의 콜리전 결과 가져오기 => Owner는 무시
+	//AttackPower 가져오기
+	//HealthCompoent에서 DamageTaken 실행
+
+	//딜레이 후 DoAtkEnd 호출
+}
+
+void AFrogPlayerCharacter::DoAttackEnd()
+{
+	//AttackComponent에서 콜라이더 OFF 함수 호출
+	//bool 변수를 만들고 다시 공격 가능 상태로 만들기
 }
