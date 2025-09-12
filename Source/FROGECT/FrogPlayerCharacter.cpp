@@ -12,7 +12,6 @@ AFrogPlayerCharacter::AFrogPlayerCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 }
 
 // Called when the game starts or when spawned
@@ -34,19 +33,20 @@ void AFrogPlayerCharacter::BeginPlay()
 	GetCharacterMovement()->MaxWalkSpeed *= MoveSpeedScale;					// 이동 속도
 	GetCharacterMovement()->JumpZVelocity *= JumpPowerScale;				// 점프 힘
 
+	// Weapon 스폰 및 어태치
 	if (WeaponClass)
 	{
-		// Weapon 스폰
 		Weapon = GetWorld()->SpawnActor<AFrogWeaponBase>(WeaponClass);
-		
-		if (!DamageComponent)
+		if (Weapon)
 		{
-			DamageComponent = Weapon->FrogDamageComponent;
-			UE_LOG(LogTemp, Log, TEXT("데미지컴포넌트 할당"));
+			Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon"));
+			Weapon->SetOwner(this);
 		}
-		else UE_LOG(LogTemp, Log, TEXT("데미지컴포넌트 있음"));
+		
+		// 임시: 플레이어 에셋 생기면 소켓으로 변경
+		Weapon->GetRootComponent()->SetRelativeLocation(FVector(20, 40, 0));
+		Weapon->GetRootComponent()->SetRelativeRotation(FRotator(-40, 0, 0));
 	}
-
 }
 
 // Called every frame
@@ -223,10 +223,9 @@ void AFrogPlayerCharacter::DoAttackStart()
 	UE_LOG(LogTemp, Display, TEXT("Has SWORD, LEFT MOUSE CLICK"));
 
 	//AttackComponent에서 콜라이더 ON 함수 호출
-	DamageComponent->EnableCollision();
-	
+	Weapon->GetFrogDamageComponent()->EnableCollision();
 
-	//AttackComp의 콜리전 결과 가져오기 => Owner는 무시
+	//AttackComp의 콜리전 결과 받기
 	//AttackPower 가져오기
 	//HealthCompoent에서 DamageTaken 실행
 

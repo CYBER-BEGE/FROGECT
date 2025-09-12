@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "FrogDamageComponent.h"
 #include "FrogWeaponBase.generated.h"
 
 UCLASS()
@@ -24,12 +25,16 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
-	class UFrogDamageComponent* FrogDamageComponent;
-
-	void test();
+	UStaticMeshComponent* GetMesh() const { return Mesh; }
+	UFrogDamageComponent* GetFrogDamageComponent() const { return FrogDamageComponent; }
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "State")
 	float AttackPower = 10.0f;
+
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UStaticMeshComponent* Mesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	class UFrogDamageComponent* FrogDamageComponent;
 };

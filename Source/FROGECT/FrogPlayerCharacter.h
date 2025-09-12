@@ -88,10 +88,10 @@ protected:
 	class UInputAction* AttackAction;
 
 	void Landed(const FHitResult& Hit) override;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	
+	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class AFrogWeaponBase> WeaponClass;
+
+	UPROPERTY()
 	class AFrogWeaponBase* Weapon;
 
 };

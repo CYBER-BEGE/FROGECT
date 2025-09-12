@@ -2,6 +2,7 @@
 
 
 #include "FrogDamageComponent.h"
+#include "FrogWeaponBase.h"
 
 // Sets default values for this component's properties
 UFrogDamageComponent::UFrogDamageComponent()
@@ -18,9 +19,11 @@ UFrogDamageComponent::UFrogDamageComponent()
 void UFrogDamageComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
 	
+	
+	GetOwner()->SetActorEnableCollision(false);
+	
+
 }
 
 
@@ -34,10 +37,23 @@ void UFrogDamageComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 
 void UFrogDamageComponent::EnableCollision()
 {
-	//GetOwner()->SetActorEnableCollision(true);
+	if (AFrogWeaponBase* Owner = Cast<AFrogWeaponBase>(GetOwner()))
+	{
+		if (Owner->GetMesh())
+		{
+			Owner->GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		}
+	}
 }
 
 void UFrogDamageComponent::DisableCollision()
 {
+	if (AFrogWeaponBase* Owner = Cast<AFrogWeaponBase>(GetOwner()))
+	{
+		if (Owner->GetMesh())
+		{
+			Owner->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		}
+	}
 }
 
