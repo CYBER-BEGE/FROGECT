@@ -44,6 +44,25 @@ void AFrogPlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	//UE_LOG(LogTemp, Warning, TEXT("Velocity: %s"), *GetCharacterMovement()->Velocity.ToString());
+
+
+	if (bIsGrappling)
+	{
+		FVector CurrentLocation = GetActorLocation();
+
+		FVector PullDir = (HookTargetLocation - GetActorLocation()).GetSafeNormal();
+		float PullStrength = GrapplePullSpeed * GetCharacterMovement()->Mass;
+		GetCharacterMovement()->AddForce(PullDir * PullStrength);
+
+		// 도착 체크 (100 단위 거리 이내)
+		if (FVector::Dist(CurrentLocation, HookTargetLocation) < 100.f)
+		{
+			// Grappling 종료
+			OnHookDetached();
+			DoHookEnd();
+		}
+	}
+
 }
 
 // Called to bind functionality to input
@@ -214,25 +233,12 @@ void AFrogPlayerCharacter::DoHookStart()
 		GrapplingHookInstance->SetOwner(this); // 소유자 설정
 
 		// 케이블 시작점 → 캐릭터의 HookSpawnPoint
-		GrapplingHookInstance->HookCable->AttachToComponent(
-			HookSpawnPoint,
-			FAttachmentTransformRules::KeepRelativeTransform
-		);
+		GrapplingHookInstance->HookCable->AttachToComponent(HookSpawnPoint, FAttachmentTransformRules::KeepRelativeTransform);
 		GrapplingHookInstance->HookCable->bAttachStart = true;
 
 		// 케이블 끝점 → GrapplingHookInstance (Projectile)
-		// 케이블 끝점을 훅의 RootComponent에 직접 Attach
-		GrapplingHookInstance->HookCable->EndLocation = FVector::ZeroVector;
-		GrapplingHookInstance->HookCable->SetAttachEndToComponent(
-			GrapplingHookInstance->GetRootComponent()
-		);
+		GrapplingHookInstance->HookCable->SetAttachEndToComponent(GrapplingHookInstance->GetRootComponent());
 		GrapplingHookInstance->HookCable->bAttachEnd = true;
-
-		// 디버깅 로그
-		UE_LOG(LogTemp, Warning, TEXT("Cable Start = %s"),
-			*GetNameSafe(HookSpawnPoint));
-		UE_LOG(LogTemp, Warning, TEXT("Cable End = %s"),
-			*GetNameSafe(GrapplingHookInstance));
 	}
 }
 
@@ -247,6 +253,8 @@ void AFrogPlayerCharacter::DoHookEnd()
 		GrapplingHookInstance->DestroyProjectile();
 		GrapplingHookInstance = nullptr; // 참조 정리
 	}
+
+	OnHookDetached();
 }
 
 void AFrogPlayerCharacter::ResetMovementComps()
@@ -255,4 +263,30 @@ void AFrogPlayerCharacter::ResetMovementComps()
 	GetCharacterMovement()->GravityScale = 2.0f;					// 중력
 	GetCharacterMovement()->GroundFriction = 8.0f;					// 마찰력
 	GetCharacterMovement()->BrakingDecelerationWalking = 2048.0f;	// 감속력
+	GetCharacterMovement()->BrakingDecelerationFalling = 50.0f;		// 공중 감속력
+	GetCharacterMovement()->AirControl = 0.7f;						// 공중 제어
+
+}
+
+void AFrogPlayerCharacter::OnHookAttached(const FVector& Target)
+{
+	bIsGrappling = true;
+
+	HookTargetLocation = Target;
+	HookTargetLocation.Z += 50.0f; // 약간 타겟 위로 보정
+
+	LaunchCharacter(FVector(0, 0, 200.0f), false, false);
+
+	GetCharacterMovement()->GravityScale = 0.0f;				// 중력 0
+	GetCharacterMovement()->GroundFriction = 0.0f;				// 마찰력 0
+	GetCharacterMovement()->BrakingDecelerationWalking = 0.0f;	// 감속력 0
+
+	GetCharacterMovement()->BrakingDecelerationFalling = 100.0f;// 공중 감속력
+	GetCharacterMovement()->AirControl = 0.6f;					// 공중 제어
+}
+
+void AFrogPlayerCharacter::OnHookDetached()
+{
+	bIsGrappling = false;
+	ResetMovementComps();
 }

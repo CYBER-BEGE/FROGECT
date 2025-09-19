@@ -2,6 +2,7 @@
 
 
 #include "FrogGrapplingHook.h"
+#include "FrogPlayerCharacter.h"
 
 // Sets default values
 AFrogGrapplingHook::AFrogGrapplingHook()
@@ -27,4 +28,17 @@ void AFrogGrapplingHook::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AFrogGrapplingHook::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
+{
+	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
+
+	AFrogPlayerCharacter* Player = Cast<AFrogPlayerCharacter>(GetOwner());
+	if (Player)
+	{
+		Player->OnHookAttached(Hit.ImpactPoint);
+
+		UE_LOG(LogTemp, Warning, TEXT("Hook Attached at Location: %s"), *Hit.ImpactPoint.ToString());
+	}
 }

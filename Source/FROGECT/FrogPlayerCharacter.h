@@ -30,15 +30,6 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item", meta = (AllowPrivateAccess = "true"))
-	USceneComponent* HookSpawnPoint;
-
-	UPROPERTY(EditAnywhere, Category = "Item")
-	TSubclassOf<class AFrogGrapplingHook> GrapplingHookClass;
-
-	UPROPERTY()
-	AFrogGrapplingHook* GrapplingHookInstance;
-
 	UPROPERTY(EditAnywhere, Category = "Item")
 	bool HasSword = false;
 
@@ -75,6 +66,23 @@ private:
 	bool bIsDashing = false;		// 대시 중인지 여부
 	bool bCanDash = true;			// 대시 가능 여부
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item", meta = (AllowPrivateAccess = "true"))
+	USceneComponent* HookSpawnPoint;
+
+	UPROPERTY(EditAnywhere, Category = "Item")
+	TSubclassOf<class AFrogGrapplingHook> GrapplingHookClass;
+
+	UPROPERTY()
+	AFrogGrapplingHook* GrapplingHookInstance;
+
+	UPROPERTY(EditAnywhere, Category = "Item")
+	float GrapplePullSpeed = 2000.0f;
+
+	FVector HookTargetLocation;
+	bool bIsGrappling = false;
+
+	void OnHookDetached();
+
 protected:
 	UPROPERTY(EditAnywhere, Category = "Input Action")
 	class UInputAction* MoveAction;
@@ -95,4 +103,7 @@ protected:
 	class UInputAction* HookAction;
 
 	void Landed(const FHitResult& Hit) override;
+
+public:
+	void OnHookAttached(const FVector& Target);
 };
