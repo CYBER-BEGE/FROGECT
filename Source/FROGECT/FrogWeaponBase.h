@@ -25,15 +25,18 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
-	UStaticMeshComponent* GetMesh() const { return Mesh; }
+	UStaticMeshComponent* GetMesh() const { return WeaponMesh; }
 	UFrogDamageComponent* GetFrogDamageComponent() const { return FrogDamageComponent; }
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "State")
 	float AttackPower = 10.0f;
 
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UStaticMeshComponent* Mesh;
+	UPROPERTY(EditDefaultsOnly, Category = "Components")
+	UStaticMeshComponent* WeaponMesh;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Components")
+	UShapeComponent* WeaponCollider;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class UFrogDamageComponent* FrogDamageComponent;

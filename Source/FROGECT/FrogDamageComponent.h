@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/SceneComponent.h"
+#include "Components/ActorComponent.h"
 #include "FrogDamageComponent.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class FROGECT_API UFrogDamageComponent : public USceneComponent
+class FROGECT_API UFrogDamageComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -25,6 +25,5 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
-	void EnableCollision();
-	void DisableCollision();
+
 };

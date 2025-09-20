@@ -20,10 +20,8 @@ void UFrogDamageComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	
-	GetOwner()->SetActorEnableCollision(false);
-	
-
+	AFrogWeaponBase* Owner = Cast<AFrogWeaponBase>(GetOwner());
+	Owner->SetActorEnableCollision(false);
 }
 
 
@@ -34,26 +32,3 @@ void UFrogDamageComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 
 	// ...
 }
-
-void UFrogDamageComponent::EnableCollision()
-{
-	if (AFrogWeaponBase* Owner = Cast<AFrogWeaponBase>(GetOwner()))
-	{
-		if (Owner->GetMesh())
-		{
-			Owner->GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		}
-	}
-}
-
-void UFrogDamageComponent::DisableCollision()
-{
-	if (AFrogWeaponBase* Owner = Cast<AFrogWeaponBase>(GetOwner()))
-	{
-		if (Owner->GetMesh())
-		{
-			Owner->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		}
-	}
-}
-

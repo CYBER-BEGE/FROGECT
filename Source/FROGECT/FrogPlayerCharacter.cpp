@@ -12,6 +12,14 @@ AFrogPlayerCharacter::AFrogPlayerCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	// [임시] 에셋 없는동안만 임시 사용
+	// 임시 손 소켓
+	RightHand = CreateDefaultSubobject<USceneComponent>(TEXT("RightHand"));
+	RightHand->SetupAttachment(GetMesh());  
+	RightHand->SetRelativeLocation(FVector(20.f, 30.f, 0.f));
+	RightHand->SetRelativeRotation(FRotator(-50.f, 0.f, 0.f));
+
 }
 
 // Called when the game starts or when spawned
@@ -37,15 +45,19 @@ void AFrogPlayerCharacter::BeginPlay()
 	if (WeaponClass)
 	{
 		Weapon = GetWorld()->SpawnActor<AFrogWeaponBase>(WeaponClass);
+
 		if (Weapon)
 		{
-			Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("Weapon"));
 			Weapon->SetOwner(this);
+
+			// Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("***SOKETNAME***"));
+			Weapon->AttachToComponent(RightHand, FAttachmentTransformRules::SnapToTargetNotIncludingScale); // 임시 손 소켓에 어태치
 		}
-		
-		// 임시: 플레이어 에셋 생기면 소켓으로 변경
-		Weapon->GetRootComponent()->SetRelativeLocation(FVector(20, 40, 0));
-		Weapon->GetRootComponent()->SetRelativeRotation(FRotator(-40, 0, 0));
+	}
+	else 
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NO Weapon Class: %s"), *GetName());
+		return;
 	}
 }
 
@@ -218,22 +230,20 @@ void AFrogPlayerCharacter::ResetMovementComps()
 void AFrogPlayerCharacter::DoAttackStart()
 {
 	if (!HasSword) return;
-	//공격 가능상태인지 확인하는 bool 변수 체크
-
+	// 공격 가능상태인지 확인하는 bool 변수 체크
+	// if(!CanAttack) return;
 	UE_LOG(LogTemp, Display, TEXT("Has SWORD, LEFT MOUSE CLICK"));
 
-	//AttackComponent에서 콜라이더 ON 함수 호출
-	Weapon->GetFrogDamageComponent()->EnableCollision();
-
-	//AttackComp의 콜리전 결과 받기
-	//AttackPower 가져오기
-	//HealthCompoent에서 DamageTaken 실행
+	//DmgComp 호출
 
 	//딜레이 후 DoAtkEnd 호출
+	DoAttackEnd();
 }
 
 void AFrogPlayerCharacter::DoAttackEnd()
 {
-	//AttackComponent에서 콜라이더 OFF 함수 호출
+	//DamageComponent에서 콜라이더 OFF 함수 호출
+	//Weapon->GetFrogDamageComponent()->DisableCollision();
+
 	//bool 변수를 만들고 다시 공격 가능 상태로 만들기
 }

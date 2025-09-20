@@ -9,15 +9,14 @@ AFrogWeaponBase::AFrogWeaponBase()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	RootComponent = Mesh;
+	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	RootComponent = WeaponMesh;
 
 	// 데미지 컴포넌트 어태치
 	FrogDamageComponent = CreateDefaultSubobject<UFrogDamageComponent>(TEXT("Damage Component"));
-	FrogDamageComponent->SetupAttachment(Mesh);
 
-	// 콜리전 기본 OFF
-	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 콜리전 OFF
+	WeaponMesh->SetGenerateOverlapEvents(false); // 오버랩 이벤트 OFF
 }
 
 // Called when the game starts or when spawned
@@ -33,4 +32,3 @@ void AFrogWeaponBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-

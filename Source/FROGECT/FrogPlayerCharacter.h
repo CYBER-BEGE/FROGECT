@@ -63,8 +63,6 @@ private:
 	bool bIsDashing = false;		// 대시 중인지 여부
 	bool bCanDash = true;			// 대시 가능 여부
 
-	class UFrogDamageComponent* DamageComponent;
-
 	void DoAttackStart();
 	void DoAttackEnd();
 
@@ -88,10 +86,15 @@ protected:
 	class UInputAction* AttackAction;
 
 	void Landed(const FHitResult& Hit) override;
-	UPROPERTY(EditDefaultsOnly)
+
+	// 임시 손 소켓 - 에셋 추가 후 삭제
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
+	USceneComponent* RightHand;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Attack")
 	TSubclassOf<class AFrogWeaponBase> WeaponClass;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, Category = "Attack")
 	class AFrogWeaponBase* Weapon;
 
 };
