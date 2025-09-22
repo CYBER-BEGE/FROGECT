@@ -24,5 +24,12 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
+public:
+	void DamageTaken(AActor* AttackActor, float AttackPower);
+	void Heal();
+
+private:
+	float Health = 100.0f;
+
+	
 };

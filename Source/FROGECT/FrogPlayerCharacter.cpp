@@ -229,29 +229,29 @@ void AFrogPlayerCharacter::ResetMovementComps()
 
 void AFrogPlayerCharacter::DoAttackStart()
 {
-	if (!HasSword) return;
-	// 공격 가능상태인지 확인하는 bool 변수 체크
-	// if(!CanAttack) return;
-	UE_LOG(LogTemp, Display, TEXT("Has SWORD, LEFT MOUSE CLICK"));
+	if (!HasSword || !bCanAttack) return; // 검이 없거나 공격 딜레이 중일 시 종료
 
-	// Weapon 콜리전 오버랩 ON
-	if (Weapon)
+	if (Weapon) 
 	{
-		Weapon->EnableWeaponOverlap();
+		Weapon->EnableWeaponOverlap(); // Weapon 콜리전 오버랩 ON
+		bCanAttack = false;
 	}
 	else 
 	{
-		UE_LOG(LogTemp, Warning, TEXT("DoAttackStart: NO Weapon"));
+		UE_LOG(LogTemp, Warning, TEXT("DoAttackStart(): %s NO Weapon"), *GetActorLabel());
 	}
 
-	//딜레이 후 DoAtkEnd 호출
-	//DoAttackEnd();
+	// 딜레이 후 DoAttackEnd 호출
+	// 딜레이 시간 추후 애니메이션에 맞춰서 세팅
+	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &AFrogPlayerCharacter::DoAttackEnd, 0.2f, false);
 }
 
 void AFrogPlayerCharacter::DoAttackEnd()
 {
-	// Weapon 콜리전 오버랩 OFF
-	if (Weapon) Weapon->DisableWeaponOverlap();
-
-	//bool 변수를 만들고 다시 공격 가능 상태로 만들기
+	
+	if (Weapon)
+	{
+		Weapon->DisableWeaponOverlap(); // Weapon 콜리전 오버랩 OFF
+		bCanAttack = true;
+	}
 }

@@ -25,5 +25,5 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
-
+	void ApplyDamage(AActor* AttackActor, AActor* OtherActor, float AttackPower);
 };

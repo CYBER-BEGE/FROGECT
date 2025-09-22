@@ -66,6 +66,9 @@ private:
 	void DoAttackStart();
 	void DoAttackEnd();
 
+	FTimerHandle AttackTimerHandle;
+	bool bCanAttack = true;
+
 protected:
 	UPROPERTY(EditAnywhere, Category = "Input Action")
 	class UInputAction* MoveAction;

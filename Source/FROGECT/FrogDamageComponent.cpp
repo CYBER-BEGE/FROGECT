@@ -2,6 +2,7 @@
 
 
 #include "FrogDamageComponent.h"
+#include "FrogHealthComponent.h"
 #include "FrogWeaponBase.h"
 
 // Sets default values for this component's properties
@@ -30,4 +31,17 @@ void UFrogDamageComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+}
+
+
+
+void UFrogDamageComponent::ApplyDamage(AActor* AttackActor, AActor* TargetActor, float AttackPower)
+{
+	if (!TargetActor || TargetActor == AttackActor) return; 
+	
+	// HealthComponent 찾기 (HealthComponent 내부 함수로 변경, 이런식으로 갖고오지 마셈)
+	if (UFrogHealthComponent* HealthComponent = TargetActor->FindComponentByClass<UFrogHealthComponent>())
+	{
+		HealthComponent->DamageTaken(AttackActor, AttackPower);
+	}
 }

@@ -65,20 +65,17 @@ void AFrogWeaponBase::DisableWeaponOverlap()
 	WeaponCollider->SetGenerateOverlapEvents(false);
 }
 
-void AFrogWeaponBase::OnWeaponOverlap(UPrimitiveComponent* ThisComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 /*OtherBodyIndex*/, bool /*bFromSweep*/, const FHitResult& /*SweepResult*/)
+void AFrogWeaponBase::OnWeaponOverlap(UPrimitiveComponent* ThisComponent, AActor* TargetActor, UPrimitiveComponent* TargetComponent, int32 /*TargetBodyIndex*/, bool /*bFromSweep*/, const FHitResult& /*SweepResult*/)
 {
-	UE_LOG(LogTemp, Warning, TEXT("OnWeaponOverlap 진입체크"));
-
-	if (!OtherActor || OtherActor == this || OtherActor == GetOwner()) return;
-	UE_LOG(LogTemp, Warning, TEXT("Overlap %s"), *OtherActor->GetActorLabel());
+	if (TargetActor == GetOwner()) return;
+	//UE_LOG(LogTemp, Warning, TEXT("%s 와 %s 가 오버랩됨"), *GetOwner()->GetActorLabel(), *TargetActor->GetActorLabel());
 
 	if (FrogDamageComponent) 
 	{
-		//FrogDamageComponent->ApplyDamage(OtherActor);
-		//UE_LOG(LogTemp, Warning, TEXT("Overlap %s"), *OtherActor->GetName());
+		FrogDamageComponent->ApplyDamage(GetOwner(), TargetActor, AttackPower);
 	}
 	else 
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("No Damage Component: %s"), *GetName());
+		UE_LOG(LogTemp, Warning, TEXT("No Damage Component in this Actor: %s"), *GetActorLabel());
 	}
 }

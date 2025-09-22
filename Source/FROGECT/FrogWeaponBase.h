@@ -43,5 +43,6 @@ protected:
 
 private:
 	UFUNCTION()
-	void OnWeaponOverlap(UPrimitiveComponent* ThisComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnWeaponOverlap(UPrimitiveComponent* ThisComponent, AActor* TargetActor, UPrimitiveComponent* TargetComponent, int32 TargetBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 };
