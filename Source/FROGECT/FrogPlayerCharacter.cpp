@@ -234,16 +234,24 @@ void AFrogPlayerCharacter::DoAttackStart()
 	// if(!CanAttack) return;
 	UE_LOG(LogTemp, Display, TEXT("Has SWORD, LEFT MOUSE CLICK"));
 
-	//DmgComp 호출
+	// Weapon 콜리전 오버랩 ON
+	if (Weapon)
+	{
+		Weapon->EnableWeaponOverlap();
+	}
+	else 
+	{
+		UE_LOG(LogTemp, Warning, TEXT("DoAttackStart: NO Weapon"));
+	}
 
 	//딜레이 후 DoAtkEnd 호출
-	DoAttackEnd();
+	//DoAttackEnd();
 }
 
 void AFrogPlayerCharacter::DoAttackEnd()
 {
-	//DamageComponent에서 콜라이더 OFF 함수 호출
-	//Weapon->GetFrogDamageComponent()->DisableCollision();
+	// Weapon 콜리전 오버랩 OFF
+	if (Weapon) Weapon->DisableWeaponOverlap();
 
 	//bool 변수를 만들고 다시 공격 가능 상태로 만들기
 }

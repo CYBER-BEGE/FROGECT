@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+//// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -25,19 +25,23 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
-	UStaticMeshComponent* GetMesh() const { return WeaponMesh; }
-	UFrogDamageComponent* GetFrogDamageComponent() const { return FrogDamageComponent; }
+	void EnableWeaponOverlap();
+	void DisableWeaponOverlap();
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "State")
 	float AttackPower = 10.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Components")
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	UStaticMeshComponent* WeaponMesh;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Components")
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	UShapeComponent* WeaponCollider;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	class UFrogDamageComponent* FrogDamageComponent;
+
+private:
+	UFUNCTION()
+	void OnWeaponOverlap(UPrimitiveComponent* ThisComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 };

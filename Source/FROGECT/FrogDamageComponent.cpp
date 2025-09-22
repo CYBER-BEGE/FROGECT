@@ -21,7 +21,6 @@ void UFrogDamageComponent::BeginPlay()
 	Super::BeginPlay();
 	
 	AFrogWeaponBase* Owner = Cast<AFrogWeaponBase>(GetOwner());
-	Owner->SetActorEnableCollision(false);
 }
 
 
