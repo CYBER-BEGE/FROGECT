@@ -34,14 +34,18 @@ void UFrogDamageComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 }
 
 
-
 void UFrogDamageComponent::ApplyDamage(AActor* AttackActor, AActor* TargetActor, float AttackPower)
 {
-	if (!TargetActor || TargetActor == AttackActor) return; 
+	if (!TargetActor || TargetActor == AttackActor) return; // 피격자가 nullptr, 공격자 본인이면 종료
 	
-	// HealthComponent 찾기 (HealthComponent 내부 함수로 변경, 이런식으로 갖고오지 마셈)
-	if (UFrogHealthComponent* HealthComponent = TargetActor->FindComponentByClass<UFrogHealthComponent>())
+	UFrogHealthComponent* HealthComponent = TargetActor->FindComponentByClass<UFrogHealthComponent>(); // 피격자의 HealthComponent 받아오기
+	
+	if (HealthComponent)
 	{
 		HealthComponent->DamageTaken(AttackActor, AttackPower);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s HealthComponent 없음"), *TargetActor->GetActorLabel());
 	}
 }
