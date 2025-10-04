@@ -7,6 +7,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "FrogProjectile.h"
 #include "FrogGrapplingHook.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AFrogPlayerCharacter::AFrogPlayerCharacter()
@@ -45,21 +46,44 @@ void AFrogPlayerCharacter::Tick(float DeltaTime)
 
 	//UE_LOG(LogTemp, Warning, TEXT("Velocity: %s"), *GetCharacterMovement()->Velocity.ToString());
 
-
 	if (bIsGrappling)
 	{
-		FVector CurrentLocation = GetActorLocation();
-
+		/* force 기반 이동 */
 		FVector PullDir = (HookTargetLocation - GetActorLocation()).GetSafeNormal();
 		float PullStrength = GrapplePullSpeed * GetCharacterMovement()->Mass;
 		GetCharacterMovement()->AddForce(PullDir * PullStrength);
 
-		// 도착 체크 (100 단위 거리 이내)
+		/* 도착 체크 (100 단위 거리 이내) */
+		FVector CurrentLocation = GetActorLocation();
 		if (FVector::Dist(CurrentLocation, HookTargetLocation) < 100.f)
 		{
-			// Grappling 종료
+			UE_LOG(LogTemp, Warning, TEXT("Grappling has arrived!"));
 			OnHookDetached();
 			DoHookEnd();
+			return;
+		}
+
+		/* 화면 벗어남 체크 */
+		if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+		{
+			FVector2D ScreenLocation;
+			if (UGameplayStatics::ProjectWorldToScreen(PlayerController, HookTargetLocation, ScreenLocation))
+			{
+				int32 ScreenX, ScreenY;
+				PlayerController->GetViewportSize(ScreenX, ScreenY);
+
+				bool bOnScreen =
+					ScreenLocation.X >= 0 && ScreenLocation.X <= ScreenX &&
+					ScreenLocation.Y >= 0 && ScreenLocation.Y <= ScreenY;
+
+				if (!bOnScreen)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("HookTarget out of view!"));
+					OnHookDetached();
+					DoHookEnd();
+					return;
+				}
+			}
 		}
 	}
 
@@ -275,14 +299,14 @@ void AFrogPlayerCharacter::OnHookAttached(const FVector& Target)
 	HookTargetLocation = Target;
 	HookTargetLocation.Z += 50.0f; // 약간 타겟 위로 보정
 
-	LaunchCharacter(FVector(0, 0, 200.0f), false, false);
+	LaunchCharacter(FVector(0, 0, 200.0f), false, false); // 그래플링 직전 공중으로 약간 띄워주기
 
 	GetCharacterMovement()->GravityScale = 0.0f;				// 중력 0
 	GetCharacterMovement()->GroundFriction = 0.0f;				// 마찰력 0
 	GetCharacterMovement()->BrakingDecelerationWalking = 0.0f;	// 감속력 0
 
-	GetCharacterMovement()->BrakingDecelerationFalling = 100.0f;// 공중 감속력
-	GetCharacterMovement()->AirControl = 0.6f;					// 공중 제어
+	GetCharacterMovement()->BrakingDecelerationFalling = 100.0f;// 공중 감속력 상승
+	GetCharacterMovement()->AirControl = 0.6f;					// 공중 제어 하락
 }
 
 void AFrogPlayerCharacter::OnHookDetached()
