@@ -226,13 +226,26 @@ void AFrogPlayerCharacter::DoHookStart()
 
 	bCanGrapple = false;
 
-	//UE_LOG(LogTemp, Warning, TEXT("Hook Start"));
+	/* 훅 발사 위치 및 방향 설정 */
+	FRotator ControlRot = Controller->GetControlRotation();
+	FVector Start = GetActorLocation() + FVector(0.f, 0.f, BaseEyeHeight) - -GetActorRightVector() * 10.f;; // 캐릭터 눈 높이
+	FVector End = Start + ControlRot.Vector() * 10000.f; // 시야 방향으로 10,000 유닛 쏘기
 
-	FRotator Rotation = Controller->GetControlRotation();
+	FHitResult Hit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+	{
+		End = Hit.Location; // 실제 맞은 위치
+	}
+
+	FRotator Rotation = (End - Start).Rotation();
 	FVector Location = HookSpawnPoint->GetComponentLocation();
-
+	
+	// 훅 투사체 스폰
 	GrapplingHookInstance = GetWorld()->SpawnActor<AFrogGrapplingHook>(GrapplingHookClass, Location, Rotation);
 
+	/* 케이블 연결 */
 	if (GrapplingHookInstance)
 	{
 		GrapplingHookInstance->SetOwner(this); // 소유자 설정
@@ -246,13 +259,12 @@ void AFrogPlayerCharacter::DoHookStart()
 		GrapplingHookInstance->HookCable->bAttachEnd = true;
 	}
 
+	// 일정 시간 후 훅 발사 종료
 	GetWorldTimerManager().SetTimer(HookTimerHandle, this, &AFrogPlayerCharacter::DoHookEnd, 0.8f, false);
 }
 
 void AFrogPlayerCharacter::DoHookEnd()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("Hook End"));
-
 	if (GrapplingHookInstance && GrapplingHookInstance->IsValidLowLevel())
 	{
 		GrapplingHookInstance->DestroyProjectile();

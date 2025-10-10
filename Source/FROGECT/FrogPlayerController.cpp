@@ -3,10 +3,23 @@
 
 #include "FrogPlayerController.h"
 #include "EnhancedInputSubsystems.h"
+#include "Blueprint/UserWidget.h"
 
 AFrogPlayerController::AFrogPlayerController()
 {
 	
+}
+
+void AFrogPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	/* HUD 위젯 생성 및 추가 */
+	HUD = CreateWidget(this, HUDClass);
+	if (HUD != nullptr)
+	{
+		HUD->AddToViewport();
+	}
 }
 
 void AFrogPlayerController::SetupInputComponent()
