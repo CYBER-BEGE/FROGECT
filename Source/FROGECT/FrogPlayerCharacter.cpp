@@ -24,6 +24,8 @@ void AFrogPlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	PlayerController = Cast<APlayerController>(GetController());
+
 	// CharacterMovement 세팅
 	GetCharacterMovement()->BrakingDecelerationFalling = 50.0f;				// 공중 감속력
 	GetCharacterMovement()->AirControl = 0.7f;								// 공중 제어
@@ -46,45 +48,7 @@ void AFrogPlayerCharacter::Tick(float DeltaTime)
 
 	//UE_LOG(LogTemp, Warning, TEXT("Velocity: %s"), *GetCharacterMovement()->Velocity.ToString());
 
-	if (bIsHookAttaching)
-	{
-		/* force 기반 이동 */
-		FVector PullDir = (HookTargetLocation - GetActorLocation()).GetSafeNormal();
-		float PullStrength = GrapplePullSpeed * GetCharacterMovement()->Mass;
-		GetCharacterMovement()->AddForce(PullDir * PullStrength);
-
-		/* 도착 체크 (100 단위 거리 이내) */
-		FVector CurrentLocation = GetActorLocation();
-		if (FVector::Dist(CurrentLocation, HookTargetLocation) < 100.f)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Grappling has arrived!"));
-			DoHookEnd();
-			return;
-		}
-
-		/* 화면 벗어남 체크 */
-		if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
-		{
-			FVector2D ScreenLocation;
-			if (UGameplayStatics::ProjectWorldToScreen(PlayerController, HookTargetLocation, ScreenLocation))
-			{
-				int32 ScreenX, ScreenY;
-				PlayerController->GetViewportSize(ScreenX, ScreenY);
-
-				bool bOnScreen =
-					ScreenLocation.X >= 0 && ScreenLocation.X <= ScreenX &&
-					ScreenLocation.Y >= 0 && ScreenLocation.Y <= ScreenY;
-
-				if (!bOnScreen)
-				{
-					UE_LOG(LogTemp, Warning, TEXT("HookTarget out of view!"));
-					DoHookEnd();
-					return;
-				}
-			}
-		}
-	}
-
+	GrapplePull();
 }
 
 // Called to bind functionality to input
@@ -121,18 +85,31 @@ void AFrogPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 	}
 }
 
+void AFrogPlayerCharacter::ResetMovementComps()
+{
+	GetCharacterMovement()->MaxWalkSpeed = 600.0f * MoveSpeedScale;	// 속도
+	GetCharacterMovement()->GravityScale = 2.0f;					// 중력
+	GetCharacterMovement()->GroundFriction = 8.0f;					// 마찰력
+	GetCharacterMovement()->BrakingDecelerationWalking = 2048.0f;	// 감속력
+	GetCharacterMovement()->BrakingDecelerationFalling = 50.0f;		// 공중 감속력
+	GetCharacterMovement()->AirControl = 0.7f;						// 공중 제어
+}
+
+void AFrogPlayerCharacter::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+
+	if (!bCanDash && !bIsDashing) // 대시 가능/대시 중이 아닐 시
+	{
+		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &AFrogPlayerCharacter::DashCooldown, 0.5f, false);
+	}
+}
+
 void AFrogPlayerCharacter::MoveInput(const FInputActionValue& Value)
 {
 	MovementVector = Value.Get<FVector2D>();
 
 	DoMove(MovementVector.X, MovementVector.Y);
-}
-
-void AFrogPlayerCharacter::LookInput(const FInputActionValue& Value)
-{
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
-
-	DoLook(LookAxisVector.X, LookAxisVector.Y);
 }
 
 void AFrogPlayerCharacter::DoMove(float Right, float Forward)
@@ -142,6 +119,13 @@ void AFrogPlayerCharacter::DoMove(float Right, float Forward)
 		AddMovementInput(GetActorRightVector(), Right * MoveSpeedScale);
 		AddMovementInput(GetActorForwardVector(), Forward * MoveSpeedScale);
 	}
+}
+
+void AFrogPlayerCharacter::LookInput(const FInputActionValue& Value)
+{
+	FVector2D LookAxisVector = Value.Get<FVector2D>();
+
+	DoLook(LookAxisVector.X, LookAxisVector.Y);
 }
 
 void AFrogPlayerCharacter::DoLook(float Yaw, float Pitch)
@@ -231,16 +215,6 @@ void AFrogPlayerCharacter::DashCooldown()
 	bCanDash = true;
 }
 
-void AFrogPlayerCharacter::Landed(const FHitResult& Hit)
-{
-	Super::Landed(Hit);
-
-	if (!bCanDash && !bIsDashing) // 대시 가능/대시 중이 아닐 시
-	{
-		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &AFrogPlayerCharacter::DashCooldown, 0.5f, false);
-	}
-}
-
 void AFrogPlayerCharacter::DoHookStart()
 {
 	//if (!HasHook) return;
@@ -248,7 +222,7 @@ void AFrogPlayerCharacter::DoHookStart()
 
 	bCanGrapple = false;
 
-	UE_LOG(LogTemp, Warning, TEXT("Hook Start"));
+	//UE_LOG(LogTemp, Warning, TEXT("Hook Start"));
 
 	FRotator Rotation = Controller->GetControlRotation();
 	FVector Location = HookSpawnPoint->GetComponentLocation();
@@ -273,9 +247,7 @@ void AFrogPlayerCharacter::DoHookStart()
 
 void AFrogPlayerCharacter::DoHookEnd()
 {
-	//if (!HasHook) return;
-	
-	UE_LOG(LogTemp, Warning, TEXT("Hook End"));
+	//UE_LOG(LogTemp, Warning, TEXT("Hook End"));
 
 	if (GrapplingHookInstance && GrapplingHookInstance->IsValidLowLevel())
 	{
@@ -286,16 +258,6 @@ void AFrogPlayerCharacter::DoHookEnd()
 	bCanGrapple = true;
 	bIsHookAttaching = false;
 	ResetMovementComps();
-}
-
-void AFrogPlayerCharacter::ResetMovementComps()
-{
-	GetCharacterMovement()->MaxWalkSpeed = 600.0f * MoveSpeedScale;	// 속도
-	GetCharacterMovement()->GravityScale = 2.0f;					// 중력
-	GetCharacterMovement()->GroundFriction = 8.0f;					// 마찰력
-	GetCharacterMovement()->BrakingDecelerationWalking = 2048.0f;	// 감속력
-	GetCharacterMovement()->BrakingDecelerationFalling = 50.0f;		// 공중 감속력
-	GetCharacterMovement()->AirControl = 0.7f;						// 공중 제어
 }
 
 void AFrogPlayerCharacter::OnHookAttached(const FVector& Target)
@@ -315,4 +277,46 @@ void AFrogPlayerCharacter::OnHookAttached(const FVector& Target)
 
 	GetCharacterMovement()->BrakingDecelerationFalling = 100.0f;// 공중 감속력 상승
 	GetCharacterMovement()->AirControl = 0.6f;					// 공중 제어 하락
+}
+
+void AFrogPlayerCharacter::GrapplePull()
+{
+	if (!bIsHookAttaching) return; // 그래플링 중이 아닐 시 종료
+
+	/* force 기반 이동 */
+	FVector PullDir = (HookTargetLocation - GetActorLocation()).GetSafeNormal();	// 훅 타겟 방향 벡터
+	float PullPower = GetCharacterMovement()->Mass * GrapplePullPower;				// 힘 = 질량 * 가속도
+	GetCharacterMovement()->AddForce(PullDir * PullPower);
+
+	/* 도착 체크 (100 단위 거리 이내) */
+	FVector CurrentLocation = GetActorLocation();
+	if (FVector::Dist(CurrentLocation, HookTargetLocation) < 100.f)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Grappling has arrived!"));
+		DoHookEnd();
+		return;
+	}
+
+	/* 화면 벗어남 체크 */
+	if (PlayerController)
+	{
+		FVector2D ScreenLocation;
+		if (UGameplayStatics::ProjectWorldToScreen(PlayerController, HookTargetLocation, ScreenLocation)) // 3D 월드 좌표 → 2D 스크린 좌표 변환
+		{
+			int32 ScreenX, ScreenY;
+			PlayerController->GetViewportSize(ScreenX, ScreenY); // 뷰포트 크기 가져오기
+
+			// 스크린 좌표가 뷰포트 내에 있는지 체크
+			bool bOnScreen =
+				ScreenLocation.X >= 0 && ScreenLocation.X <= ScreenX &&
+				ScreenLocation.Y >= 0 && ScreenLocation.Y <= ScreenY;
+
+			if (!bOnScreen) // 화면 벗어남
+			{
+				//UE_LOG(LogTemp, Warning, TEXT("HookTarget out of view!"));
+				DoHookEnd();
+				return;
+			}
+		}
+	}
 }
