@@ -62,7 +62,7 @@ private:
 
 	FVector2D MovementVector;		// 인풋 받은 이동 벡터
 
-	FTimerHandle DashTimerHandle;	// 대시 타이머 핸들
+	FTimerHandle DashTimerHandle;	// 대시 쿨타임 타이머 핸들
 	bool bIsDashing = false;		// 대시 중인지 여부
 	bool bCanDash = true;			// 대시 가능 여부
 
@@ -79,9 +79,10 @@ private:
 	float GrapplePullSpeed = 2000.0f;
 
 	FVector HookTargetLocation;
-	bool bIsGrappling = false;
+	bool bCanGrapple = true;
+	bool bIsHookAttaching = false;
 
-	FTimerHandle HookTimerHandle;	// 그래플링 훅 타이머 핸들
+	FTimerHandle HookTimerHandle;	// 그래플링 훅 발사 지속 타이머 핸들
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Input Action")

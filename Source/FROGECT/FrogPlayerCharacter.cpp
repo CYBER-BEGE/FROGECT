@@ -46,7 +46,7 @@ void AFrogPlayerCharacter::Tick(float DeltaTime)
 
 	//UE_LOG(LogTemp, Warning, TEXT("Velocity: %s"), *GetCharacterMovement()->Velocity.ToString());
 
-	if (bIsGrappling)
+	if (bIsHookAttaching)
 	{
 		/* force 기반 이동 */
 		FVector PullDir = (HookTargetLocation - GetActorLocation()).GetSafeNormal();
@@ -113,7 +113,7 @@ void AFrogPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 		// Hook
 		EnhancedInputComponent->BindAction(HookAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoHookStart);
-		EnhancedInputComponent->BindAction(HookAction, ETriggerEvent::Completed, this, &AFrogPlayerCharacter::DoHookEnd);
+		//EnhancedInputComponent->BindAction(HookAction, ETriggerEvent::Completed, this, &AFrogPlayerCharacter::DoHookEnd);
 	}
 	else
 	{
@@ -156,6 +156,8 @@ void AFrogPlayerCharacter::DoLook(float Yaw, float Pitch)
 void AFrogPlayerCharacter::DoJumpStart()
 {
 	Jump();
+
+	DoHookEnd(); // 점프 시 그래플링 훅 해제
 }
 
 void AFrogPlayerCharacter::DoJumpEnd()
@@ -242,6 +244,9 @@ void AFrogPlayerCharacter::Landed(const FHitResult& Hit)
 void AFrogPlayerCharacter::DoHookStart()
 {
 	//if (!HasHook) return;
+	if (!bCanGrapple || bIsHookAttaching) return; // 이미 그래플링 중일 시 종료
+
+	bCanGrapple = false;
 
 	UE_LOG(LogTemp, Warning, TEXT("Hook Start"));
 
@@ -278,7 +283,8 @@ void AFrogPlayerCharacter::DoHookEnd()
 		GrapplingHookInstance = nullptr; // 참조 정리
 	}
 
-	bIsGrappling = false;
+	bCanGrapple = true;
+	bIsHookAttaching = false;
 	ResetMovementComps();
 }
 
@@ -294,7 +300,7 @@ void AFrogPlayerCharacter::ResetMovementComps()
 
 void AFrogPlayerCharacter::OnHookAttached(const FVector& Target)
 {
-	bIsGrappling = true;
+	bIsHookAttaching = true;
 
 	GetWorldTimerManager().ClearTimer(HookTimerHandle);
 
