@@ -81,7 +81,7 @@ private:
 	FVector HookTargetLocation;
 	bool bIsGrappling = false;
 
-	void OnHookDetached();
+	FTimerHandle HookTimerHandle;	// 그래플링 훅 타이머 핸들
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Input Action")

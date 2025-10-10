@@ -58,7 +58,6 @@ void AFrogPlayerCharacter::Tick(float DeltaTime)
 		if (FVector::Dist(CurrentLocation, HookTargetLocation) < 100.f)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Grappling has arrived!"));
-			OnHookDetached();
 			DoHookEnd();
 			return;
 		}
@@ -79,7 +78,6 @@ void AFrogPlayerCharacter::Tick(float DeltaTime)
 				if (!bOnScreen)
 				{
 					UE_LOG(LogTemp, Warning, TEXT("HookTarget out of view!"));
-					OnHookDetached();
 					DoHookEnd();
 					return;
 				}
@@ -264,6 +262,8 @@ void AFrogPlayerCharacter::DoHookStart()
 		GrapplingHookInstance->HookCable->SetAttachEndToComponent(GrapplingHookInstance->GetRootComponent());
 		GrapplingHookInstance->HookCable->bAttachEnd = true;
 	}
+
+	GetWorldTimerManager().SetTimer(HookTimerHandle, this, &AFrogPlayerCharacter::DoHookEnd, 0.8f, false);
 }
 
 void AFrogPlayerCharacter::DoHookEnd()
@@ -278,7 +278,8 @@ void AFrogPlayerCharacter::DoHookEnd()
 		GrapplingHookInstance = nullptr; // 참조 정리
 	}
 
-	OnHookDetached();
+	bIsGrappling = false;
+	ResetMovementComps();
 }
 
 void AFrogPlayerCharacter::ResetMovementComps()
@@ -289,12 +290,13 @@ void AFrogPlayerCharacter::ResetMovementComps()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2048.0f;	// 감속력
 	GetCharacterMovement()->BrakingDecelerationFalling = 50.0f;		// 공중 감속력
 	GetCharacterMovement()->AirControl = 0.7f;						// 공중 제어
-
 }
 
 void AFrogPlayerCharacter::OnHookAttached(const FVector& Target)
 {
 	bIsGrappling = true;
+
+	GetWorldTimerManager().ClearTimer(HookTimerHandle);
 
 	HookTargetLocation = Target;
 	HookTargetLocation.Z += 50.0f; // 약간 타겟 위로 보정
@@ -307,10 +309,4 @@ void AFrogPlayerCharacter::OnHookAttached(const FVector& Target)
 
 	GetCharacterMovement()->BrakingDecelerationFalling = 100.0f;// 공중 감속력 상승
 	GetCharacterMovement()->AirControl = 0.6f;					// 공중 제어 하락
-}
-
-void AFrogPlayerCharacter::OnHookDetached()
-{
-	bIsGrappling = false;
-	ResetMovementComps();
 }
