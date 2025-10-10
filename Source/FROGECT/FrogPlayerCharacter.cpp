@@ -163,6 +163,8 @@ void AFrogPlayerCharacter::DoCrouchStart()
 		GetCharacterMovement()->GroundFriction = 0.0f; // 마찰력 0
 		GetCharacterMovement()->BrakingDecelerationWalking = 466.0f * MoveSpeedScale; // 감속력 감소
 	}
+
+	DoHookEnd(); // 웅크리기 시 그래플링 훅 해제
 }
 
 void AFrogPlayerCharacter::DoCrouchEnd()
@@ -195,6 +197,8 @@ void AFrogPlayerCharacter::DoDashStart()
 	GetCharacterMovement()->MaxWalkSpeed = 0.0f;				// 이동 속도 0
 
 	GetWorldTimerManager().SetTimer(DashTimerHandle, this, &AFrogPlayerCharacter::DoDashEnd, 0.2f, false);
+
+	DoHookEnd(); // 대시 시 그래플링 훅 해제
 }
 
 void AFrogPlayerCharacter::DoDashEnd()
