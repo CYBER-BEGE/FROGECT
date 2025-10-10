@@ -260,7 +260,7 @@ void AFrogPlayerCharacter::DoHookStart()
 	}
 
 	// 일정 시간 후 훅 발사 종료
-	GetWorldTimerManager().SetTimer(HookTimerHandle, this, &AFrogPlayerCharacter::DoHookEnd, 0.8f, false);
+	GetWorldTimerManager().SetTimer(HookTimerHandle, this, &AFrogPlayerCharacter::DoHookEnd, 0.4f, false);
 }
 
 void AFrogPlayerCharacter::DoHookEnd()
