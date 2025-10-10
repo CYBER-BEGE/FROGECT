@@ -229,7 +229,7 @@ void AFrogPlayerCharacter::DoHookStart()
 	/* 훅 발사 위치 및 방향 설정 */
 	FRotator ControlRot = Controller->GetControlRotation();
 	FVector Start = GetActorLocation() + FVector(0.f, 0.f, BaseEyeHeight) - -GetActorRightVector() * 10.f;; // 캐릭터 눈 높이
-	FVector End = Start + ControlRot.Vector() * 10000.f; // 시야 방향으로 10,000 유닛 쏘기
+	FVector End = Start + ControlRot.Vector() * 5000.f; // 시야 방향으로 10,000 유닛 쏘기
 
 	FHitResult Hit;
 	FCollisionQueryParams Params;
