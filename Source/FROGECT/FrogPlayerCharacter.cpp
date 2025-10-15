@@ -20,6 +20,24 @@ AFrogPlayerCharacter::AFrogPlayerCharacter()
 	RightHand->SetRelativeLocation(FVector(20.f, 30.f, 0.f));
 	RightHand->SetRelativeRotation(FRotator(-50.f, 0.f, 0.f));
 
+	// Weapon 스폰 및 어태치
+	if (WeaponClass)
+	{
+		Weapon = GetWorld()->SpawnActor<AFrogWeaponBase>(WeaponClass);
+
+		if (Weapon)
+		{
+			Weapon->SetOwner(this);
+
+			// Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("***SOKETNAME***"));
+			Weapon->AttachToComponent(RightHand, FAttachmentTransformRules::SnapToTargetNotIncludingScale); // 임시 손 소켓에 어태치
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NO Weapon Class: %s"), *GetName());
+		return;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -41,24 +59,6 @@ void AFrogPlayerCharacter::BeginPlay()
 	GetCharacterMovement()->MaxWalkSpeed *= MoveSpeedScale;					// 이동 속도
 	GetCharacterMovement()->JumpZVelocity *= JumpPowerScale;				// 점프 힘
 
-	// Weapon 스폰 및 어태치
-	if (WeaponClass)
-	{
-		Weapon = GetWorld()->SpawnActor<AFrogWeaponBase>(WeaponClass);
-
-		if (Weapon)
-		{
-			Weapon->SetOwner(this);
-
-			// Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("***SOKETNAME***"));
-			Weapon->AttachToComponent(RightHand, FAttachmentTransformRules::SnapToTargetNotIncludingScale); // 임시 손 소켓에 어태치
-		}
-	}
-	else 
-	{
-		UE_LOG(LogTemp, Warning, TEXT("NO Weapon Class: %s"), *GetName());
-		return;
-	}
 }
 
 // Called every frame
