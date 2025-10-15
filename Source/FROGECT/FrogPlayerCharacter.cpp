@@ -17,36 +17,17 @@ AFrogPlayerCharacter::AFrogPlayerCharacter()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	/* Hook Attach */
+	HookSpawnPoint = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Hook Spawn Point"));
+	HookSpawnPoint->SetupAttachment(GetMesh());
+	HookSpawnPoint->SetRelativeLocation(FVector(0.f, -10.f, 40.f));
+
 	/* Weapon Attach */
-	// [임시] 에셋 없는동안만 임시 사용
-	// 임시 손 소켓
+	// [임시] 에셋 없는동안만 임시 손 소켓 사용
 	RightHand = CreateDefaultSubobject<USceneComponent>(TEXT("RightHand"));
 	RightHand->SetupAttachment(GetMesh());  
 	RightHand->SetRelativeLocation(FVector(20.f, 30.f, 0.f));
 	RightHand->SetRelativeRotation(FRotator(-50.f, 0.f, 0.f));
-
-	// Weapon 스폰 및 어태치
-	if (WeaponClass)
-	{
-		Weapon = GetWorld()->SpawnActor<AFrogWeaponBase>(WeaponClass);
-
-		if (Weapon)
-		{
-			Weapon->SetOwner(this);
-
-			// Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("***SOKETNAME***"));
-			Weapon->AttachToComponent(RightHand, FAttachmentTransformRules::SnapToTargetNotIncludingScale); // 임시 손 소켓에 어태치
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("NO Weapon Class: %s"), *GetName());
-		return;
-	}
-
-	/* Hook Attach */
-	HookSpawnPoint = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Hook Spawn Point"));
-	HookSpawnPoint->SetupAttachment(GetMesh());
 }
 
 // Called when the game starts or when spawned
@@ -56,7 +37,7 @@ void AFrogPlayerCharacter::BeginPlay()
 
 	PlayerController = Cast<APlayerController>(GetController());
 
-	// CharacterMovement 세팅
+	/* CharacterMovement 세팅 */
 	GetCharacterMovement()->BrakingDecelerationFalling = 50.0f;				// 공중 감속력
 	GetCharacterMovement()->AirControl = 0.7f;								// 공중 제어
 	GetCharacterMovement()->GravityScale = 2.0f;							// 중력 배율
@@ -70,6 +51,22 @@ void AFrogPlayerCharacter::BeginPlay()
 	GetCharacterMovement()->MaxWalkSpeed *= MoveSpeedScale;					// 이동 속도
 	GetCharacterMovement()->JumpZVelocity *= JumpPowerScale;				// 점프 힘
 
+	/* Weapon 스폰 및 어태치 */
+	if (WeaponClass)
+	{
+		Weapon = GetWorld()->SpawnActor<AFrogWeaponBase>(WeaponClass);
+		if (Weapon)
+		{
+			Weapon->SetOwner(this);
+			// Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("***SOKETNAME***"));
+			Weapon->AttachToComponent(RightHand, FAttachmentTransformRules::SnapToTargetNotIncludingScale); // 임시 손 소켓에 어태치
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NO Weapon Class: %s"), *GetName());
+		return;
+	}
 }
 
 // Called every frame
@@ -391,7 +388,6 @@ void AFrogPlayerCharacter::DoAttackStart()
 
 void AFrogPlayerCharacter::DoAttackEnd()
 {
-	
 	if (Weapon)
 	{
 		Weapon->DisableWeaponOverlap(); // Weapon 콜리전 오버랩 OFF

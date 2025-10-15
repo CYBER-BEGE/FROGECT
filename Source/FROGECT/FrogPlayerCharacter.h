@@ -53,13 +53,13 @@ private:
 	class UInputAction* AttackAction;
 
 	/* Item */
-	UPROPERTY(EditAnywhere, Category = "Item")
+	UPROPERTY(EditAnywhere, Category = "Gear")
 	bool HasSword = false;
 
-	UPROPERTY(EditAnywhere, Category = "Item")
+	UPROPERTY(EditAnywhere, Category = "Gear")
 	bool HasJetpack = false;
 
-	UPROPERTY(EditAnywhere, Category = "Item")
+	UPROPERTY(EditAnywhere, Category = "Gear")
 	bool HasHook = false;
 
 	/* Player Controller */
@@ -96,16 +96,16 @@ private:
 	void DashCooldown();			// 대시 쿨타임 완료 함수
 
 	/* Grappling Hook */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gear", meta = (AllowPrivateAccess = "true"))
 	USceneComponent* HookSpawnPoint;
 
-	UPROPERTY(EditAnywhere, Category = "Item")
+	UPROPERTY(EditAnywhere, Category = "Gear")
 	TSubclassOf<class AFrogGrapplingHook> GrapplingHookClass;
 
 	UPROPERTY()
 	AFrogGrapplingHook* GrapplingHookInstance; // 그래플링 훅 투사체 인스턴스
 
-	UPROPERTY(EditAnywhere, Category = "State")
+	UPROPERTY(EditAnywhere, Category = "Gear")
 	float GrapplePullPower = 2000.0f;
 
 	FVector HookTargetLocation;		// 그래플링 훅이 붙은 위치
@@ -119,21 +119,21 @@ private:
 	void GrapplePull(); // 그래플링 훅에 당겨지는 함수
 
 	/* Attack */
-	void DoAttackStart();
-	void DoAttackEnd();
-
 	FTimerHandle AttackTimerHandle;
 	bool bCanAttack = true;
 
 	// 임시 손 소켓 - 에셋 추가 후 삭제
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gear", meta = (AllowPrivateAccess = "true"))
 	USceneComponent* RightHand;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Attack")
+	UPROPERTY(EditDefaultsOnly, Category = "Gear")
 	TSubclassOf<class AFrogWeaponBase> WeaponClass;
 
-	UPROPERTY(VisibleAnywhere, Category = "Attack")
+	UPROPERTY(VisibleAnywhere, Category = "Gear")
 	class AFrogWeaponBase* Weapon;
+
+	void DoAttackStart();
+	void DoAttackEnd();
 
 protected:
 	void Landed(const FHitResult& Hit) override;
