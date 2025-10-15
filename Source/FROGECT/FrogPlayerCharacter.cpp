@@ -151,6 +151,8 @@ void AFrogPlayerCharacter::DoJumpEnd()
 
 void AFrogPlayerCharacter::DoCrouchStart()
 {
+	if (bIsHookAttaching) return; // 그래플링 중일 시 종료
+
 	Crouch();
 	
 	if (!GetCharacterMovement()->Velocity.IsNearlyZero() && !GetCharacterMovement()->IsFalling()) // 정지/공중이 아닐 시 슬라이딩
@@ -163,8 +165,6 @@ void AFrogPlayerCharacter::DoCrouchStart()
 		GetCharacterMovement()->GroundFriction = 0.0f; // 마찰력 0
 		GetCharacterMovement()->BrakingDecelerationWalking = 466.0f * MoveSpeedScale; // 감속력 감소
 	}
-
-	DoHookEnd(); // 웅크리기 시 그래플링 훅 해제
 }
 
 void AFrogPlayerCharacter::DoCrouchEnd()
@@ -178,6 +178,7 @@ void AFrogPlayerCharacter::DoDashStart()
 {
 	//if (!HasJetpack) return;					// 제트팩 없을 시 종료
 	if (!bCanDash || bIsDashing) return;		// 대시 불가능/대시 중일 시 종료
+	if (bIsHookAttaching) return;				// 그래플링 중일 시 종료
 	if (MovementVector.IsNearlyZero()) return;	// 이동 입력이 없을 시 종료
 
 	bIsDashing = true;
@@ -197,8 +198,6 @@ void AFrogPlayerCharacter::DoDashStart()
 	GetCharacterMovement()->MaxWalkSpeed = 0.0f;				// 이동 속도 0
 
 	GetWorldTimerManager().SetTimer(DashTimerHandle, this, &AFrogPlayerCharacter::DoDashEnd, 0.2f, false);
-
-	DoHookEnd(); // 대시 시 그래플링 훅 해제
 }
 
 void AFrogPlayerCharacter::DoDashEnd()
