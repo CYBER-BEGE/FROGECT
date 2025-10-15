@@ -30,46 +30,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
-	UPROPERTY(EditAnywhere, Category = "HasItem")
-	bool HasSword = false;
-
-	UPROPERTY(EditAnywhere, Category = "HasItem")
-	bool HasJetpack = false;
-
-	UPROPERTY(EditAnywhere, Category = "HasItem")
-	bool HasHook = false;
-
-	void MoveInput(const struct FInputActionValue& Value);
-	void LookInput(const struct FInputActionValue& Value);
-
-	void DoMove(float Right, float Forward);
-	void DoLook(float Yaw, float Pitch);
-
-	void DoJumpStart();
-	void DoJumpEnd();
-
-	void DoCrouchStart();
-	void DoCrouchEnd();
-
-	void DoDashStart();
-	void DoDashEnd();
-	void DashCooldown();
-
-	void ResetMovementComps();
-
-	FVector2D MovementVector;		// 인풋 받은 이동 벡터
-
-	FTimerHandle DashTimerHandle;	// 대시 타이머 핸들
-	bool bIsDashing = false;		// 대시 중인지 여부
-	bool bCanDash = true;			// 대시 가능 여부
-
-	void DoAttackStart();
-	void DoAttackEnd();
-
-	FTimerHandle AttackTimerHandle;
-	bool bCanAttack = true;
-
-protected:
+	/* Input Action */
 	UPROPERTY(EditAnywhere, Category = "Input Action")
 	class UInputAction* MoveAction;
 
@@ -86,9 +47,83 @@ protected:
 	class UInputAction* DashAction;
 
 	UPROPERTY(EditAnywhere, Category = "Input Action")
+	class UInputAction* HookAction;
+
+	UPROPERTY(EditAnywhere, Category = "Input Action")
 	class UInputAction* AttackAction;
 
-	void Landed(const FHitResult& Hit) override;
+	/* Item */
+	UPROPERTY(EditAnywhere, Category = "Item")
+	bool HasSword = false;
+
+	UPROPERTY(EditAnywhere, Category = "Item")
+	bool HasJetpack = false;
+
+	UPROPERTY(EditAnywhere, Category = "Item")
+	bool HasHook = false;
+
+	/* Player Controller */
+	UPROPERTY()
+	APlayerController* PlayerController;
+
+	/* Movement Components */
+	void ResetMovementComps();
+
+	/* Move */
+	FVector2D MovementVector; // 인풋 받은 이동 벡터
+	void MoveInput(const struct FInputActionValue& Value);
+	void DoMove(float Right, float Forward);
+
+	/* Look */
+	void LookInput(const struct FInputActionValue& Value);
+	void DoLook(float Yaw, float Pitch);
+
+	/* Jump */
+	void DoJumpStart();
+	void DoJumpEnd();
+
+	/* Crouch */
+	void DoCrouchStart();
+	void DoCrouchEnd();
+
+	/* Dash */
+	FTimerHandle DashTimerHandle;	// 대시 쿨타임 타이머 핸들
+	bool bIsDashing = false;		// 대시 중인지 여부
+	bool bCanDash = true;			// 대시 가능 여부
+
+	void DoDashStart();
+	void DoDashEnd();
+	void DashCooldown();			// 대시 쿨타임 완료 함수
+
+	/* Grappling Hook */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item", meta = (AllowPrivateAccess = "true"))
+	USceneComponent* HookSpawnPoint;
+
+	UPROPERTY(EditAnywhere, Category = "Item")
+	TSubclassOf<class AFrogGrapplingHook> GrapplingHookClass;
+
+	UPROPERTY()
+	AFrogGrapplingHook* GrapplingHookInstance; // 그래플링 훅 투사체 인스턴스
+
+	UPROPERTY(EditAnywhere, Category = "State")
+	float GrapplePullPower = 2000.0f;
+
+	FVector HookTargetLocation;		// 그래플링 훅이 붙은 위치
+	FTimerHandle HookTimerHandle;	// 그래플링 훅 발사 지속 타이머 핸들
+
+	bool bCanGrapple = true;
+	bool bIsHookAttaching = false;
+
+	void DoHookStart();
+	void DoHookEnd();
+	void GrapplePull(); // 그래플링 훅에 당겨지는 함수
+
+	/* Attack */
+	void DoAttackStart();
+	void DoAttackEnd();
+
+	FTimerHandle AttackTimerHandle;
+	bool bCanAttack = true;
 
 	// 임시 손 소켓 - 에셋 추가 후 삭제
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
@@ -100,4 +135,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Attack")
 	class AFrogWeaponBase* Weapon;
 
+protected:
+	void Landed(const FHitResult& Hit) override;
+
+public:
+	void OnHookAttached(const FVector& Target); // 그래플링 훅이 물체에 붙었을 때 호출되는 함수
 };
