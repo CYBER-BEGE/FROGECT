@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "FrogProjectile.h"
+#include "FrogProjectileBase.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 
 // Sets default values
-AFrogProjectile::AFrogProjectile()
+AFrogProjectileBase::AFrogProjectileBase()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -28,25 +28,25 @@ AFrogProjectile::AFrogProjectile()
 }
 
 // Called when the game starts or when spawned
-void AFrogProjectile::BeginPlay()
+void AFrogProjectileBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
 // Called every frame
-void AFrogProjectile::Tick(float DeltaTime)
+void AFrogProjectileBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 }
 
-void AFrogProjectile::DestroyProjectile()
+void AFrogProjectileBase::DestroyProjectile()
 {
 	Destroy();
 }
 
-void AFrogProjectile::BounceProjectile()
+void AFrogProjectileBase::BounceProjectile()
 {
 	if (ProjectileMovement)
 	{

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FrogProjectile.h"
+#include "FrogProjectileBase.h"
 #include "CableComponent.h"
 #include "FrogGrapplingHook.generated.h"
 
@@ -11,7 +11,7 @@
  * 
  */
 UCLASS()
-class FROGECT_API AFrogGrapplingHook : public AFrogProjectile
+class FROGECT_API AFrogGrapplingHook : public AFrogProjectileBase
 {
 	GENERATED_BODY()
 	
