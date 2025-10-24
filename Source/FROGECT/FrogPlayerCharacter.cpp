@@ -7,7 +7,7 @@
 #include "FrogDamageComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "FrogProjectile.h"
+#include "FrogProjectileBase.h"
 #include "FrogGrapplingHook.h"
 #include "Kismet/GameplayStatics.h"
 

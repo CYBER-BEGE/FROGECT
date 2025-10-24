@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "FrogProjectile.generated.h"
+#include "FrogProjectileBase.generated.h"
 
 UCLASS()
-class FROGECT_API AFrogProjectile : public AActor
+class FROGECT_API AFrogProjectileBase : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AFrogProjectile();
+	AFrogProjectileBase();
 
 protected:
 	// Called when the game starts or when spawned
