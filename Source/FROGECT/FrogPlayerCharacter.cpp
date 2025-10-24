@@ -54,12 +54,12 @@ void AFrogPlayerCharacter::BeginPlay()
 	/* Weapon 스폰 및 어태치 */
 	if (WeaponClass)
 	{
-		Weapon = GetWorld()->SpawnActor<AFrogWeaponBase>(WeaponClass);
-		if (Weapon)
+		WeaponInstance = GetWorld()->SpawnActor<AFrogWeaponBase>(WeaponClass);
+		if (WeaponInstance)
 		{
-			Weapon->SetOwner(this);
+			WeaponInstance->SetOwner(this);
 			// Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("***SOKETNAME***"));
-			Weapon->AttachToComponent(RightHand, FAttachmentTransformRules::SnapToTargetNotIncludingScale); // 임시 손 소켓에 어태치
+			WeaponInstance->AttachToComponent(RightHand, FAttachmentTransformRules::SnapToTargetNotIncludingScale); // 임시 손 소켓에 어태치
 		}
 	}
 	else
@@ -258,22 +258,22 @@ void AFrogPlayerCharacter::DoHookStart()
 
 	/* 훅 발사 위치 및 방향 설정 */
 	FRotator ControlRot = Controller->GetControlRotation();
-	FVector Start = GetActorLocation() + FVector(0.f, 0.f, BaseEyeHeight) - -GetActorRightVector() * 10.f;; // 캐릭터 눈 높이
-	FVector End = Start + ControlRot.Vector() * 5000.f; // 시야 방향으로 10,000 유닛 쏘기
+	FVector LineStart = GetActorLocation() + FVector(0.f, 0.f, BaseEyeHeight) - -GetActorRightVector() * 10.f;; // 캐릭터 눈 높이
+	FVector LineEnd = LineStart + ControlRot.Vector() * 5000.f; // 시야 방향으로 10,000 유닛 쏘기
 
 	FHitResult Hit;
 	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(this);
-	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+	Params.AddIgnoredActor(this); // 플레이어 무시
+	if (GetWorld()->LineTraceSingleByChannel(Hit, LineStart, LineEnd, ECC_Visibility, Params))
 	{
-		End = Hit.Location; // 실제 맞은 위치
+		LineEnd = Hit.Location; // 실제 맞은 위치
 	}
 
-	FRotator Rotation = (End - Start).Rotation();
-	FVector Location = HookSpawnPoint->GetComponentLocation();
+	FRotator ShotRotation = (LineEnd - LineStart).Rotation();
+	FVector ShotLocation = HookSpawnPoint->GetComponentLocation();
 	
 	// 훅 투사체 스폰
-	GrapplingHookInstance = GetWorld()->SpawnActor<AFrogGrapplingHook>(GrapplingHookClass, Location, Rotation);
+	GrapplingHookInstance = GetWorld()->SpawnActor<AFrogGrapplingHook>(GrapplingHookClass, ShotLocation, ShotRotation);
 
 	/* 케이블 연결 */
 	if (GrapplingHookInstance)
@@ -346,16 +346,16 @@ void AFrogPlayerCharacter::GrapplePull()
 	/* 화면 벗어남 체크 */
 	if (PlayerController)
 	{
-		FVector2D ScreenLocation;
-		if (UGameplayStatics::ProjectWorldToScreen(PlayerController, HookTargetLocation, ScreenLocation)) // 3D 월드 좌표 → 2D 스크린 좌표 변환
+		FVector2D HookScreenLocation;
+		if (UGameplayStatics::ProjectWorldToScreen(PlayerController, HookTargetLocation, HookScreenLocation)) // 3D 월드 좌표 → 2D 스크린 좌표 변환
 		{
-			int32 ScreenX, ScreenY;
-			PlayerController->GetViewportSize(ScreenX, ScreenY); // 뷰포트 크기 가져오기
+			int32 ViewportSizeX, ViewportSizeY;
+			PlayerController->GetViewportSize(ViewportSizeX, ViewportSizeY); // 뷰포트 크기 가져오기
 
 			// 스크린 좌표가 뷰포트 내에 있는지 체크
 			bool bOnScreen =
-				ScreenLocation.X >= 0 && ScreenLocation.X <= ScreenX &&
-				ScreenLocation.Y >= 0 && ScreenLocation.Y <= ScreenY;
+				HookScreenLocation.X >= 0 && HookScreenLocation.X <= ViewportSizeX &&
+				HookScreenLocation.Y >= 0 && HookScreenLocation.Y <= ViewportSizeY;
 
 			if (!bOnScreen) // 화면 벗어남
 			{
@@ -371,9 +371,9 @@ void AFrogPlayerCharacter::DoAttackStart()
 {
 	if (!HasSword || !bCanAttack) return; // 검이 없거나 공격 딜레이 중일 시 종료
 
-	if (Weapon) 
+	if (WeaponInstance)
 	{
-		Weapon->EnableWeaponOverlap(); // Weapon 콜리전 오버랩 ON
+		WeaponInstance->EnableWeaponOverlap(); // Weapon 콜리전 오버랩 ON
 		bCanAttack = false;
 	}
 	else 
@@ -388,9 +388,9 @@ void AFrogPlayerCharacter::DoAttackStart()
 
 void AFrogPlayerCharacter::DoAttackEnd()
 {
-	if (Weapon)
+	if (WeaponInstance)
 	{
-		Weapon->DisableWeaponOverlap(); // Weapon 콜리전 오버랩 OFF
+		WeaponInstance->DisableWeaponOverlap(); // Weapon 콜리전 오버랩 OFF
 		bCanAttack = true;
 	}
 }

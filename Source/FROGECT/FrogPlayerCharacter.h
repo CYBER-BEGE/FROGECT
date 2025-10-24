@@ -130,7 +130,7 @@ private:
 	TSubclassOf<class AFrogWeaponBase> WeaponClass;
 
 	UPROPERTY(VisibleAnywhere, Category = "Gear")
-	class AFrogWeaponBase* Weapon;
+	class AFrogWeaponBase* WeaponInstance;
 
 	void DoAttackStart();
 	void DoAttackEnd();
