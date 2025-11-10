@@ -37,7 +37,8 @@ void AFrogGrapplingHook::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, U
 	AFrogPlayerCharacter* Player = Cast<AFrogPlayerCharacter>(GetOwner());
 	if (Player)
 	{
-		Player->OnHookAttached(Hit.ImpactPoint);
+		//Player->OnHookAttached(Hit.ImpactPoint);
+		Player->OnToungeAttached(*Hit.GetActor());
 
 		UE_LOG(LogTemp, Warning, TEXT("Hook Attached at Location: %s"), *Hit.ImpactPoint.ToString());
 	}

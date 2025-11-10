@@ -10,6 +10,7 @@
 #include "FrogProjectileBase.h"
 #include "FrogGrapplingHook.h"
 #include "Kismet/GameplayStatics.h"
+#include "FrogEdibleActorComponent.h"
 
 // Sets default values
 AFrogPlayerCharacter::AFrogPlayerCharacter()
@@ -21,6 +22,11 @@ AFrogPlayerCharacter::AFrogPlayerCharacter()
 	HookSpawnPoint = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Hook Spawn Point"));
 	HookSpawnPoint->SetupAttachment(GetMesh());
 	HookSpawnPoint->SetRelativeLocation(FVector(0.f, -10.f, 40.f));
+
+	/* Tongue Attach */
+	TongueSpawnPoint = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Tongue Spawn Point"));
+	TongueSpawnPoint->SetupAttachment(GetMesh());
+	TongueSpawnPoint->SetRelativeLocation(FVector(0.f, 0.f, 50.f));
 
 	/* Weapon Attach */
 	// [임시] 에셋 없는동안만 임시 손 소켓 사용
@@ -109,6 +115,9 @@ void AFrogPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 		// Attack
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoAttackStart);
+
+		// Tounge Lick
+		EnhancedInputComponent->BindAction(LickAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoToungeLickStart);
 	}
 	else
 	{
@@ -392,5 +401,100 @@ void AFrogPlayerCharacter::DoAttackEnd()
 	{
 		WeaponInstance->DisableWeaponOverlap(); // Weapon 콜리전 오버랩 OFF
 		bCanAttack = true;
+	}
+}
+
+// 이 함수에서 해야 하는 일: 혓바닥 연결
+// 매달리기/끌어당기기는 별도 구현
+void AFrogPlayerCharacter::DoToungeLickStart()
+{
+	if (!bCanToungeLick) return;
+
+	bCanToungeLick = false;
+
+	/* 훅 발사 위치 및 방향 설정 */
+	FRotator ControlRot = Controller->GetControlRotation();
+	FVector LineStart = GetActorLocation() + FVector(0.f, 0.f, BaseEyeHeight) - -GetActorRightVector() * 10.f;; // 캐릭터 눈 높이
+	FVector LineEnd = LineStart + ControlRot.Vector() * 5000.f; // 시야 방향으로 10,000 유닛 쏘기
+
+	FHitResult Hit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this); // 플레이어 무시
+	if (GetWorld()->LineTraceSingleByChannel(Hit, LineStart, LineEnd, ECC_Visibility, Params))
+	{
+		LineEnd = Hit.Location; // 실제 맞은 위치
+	}
+
+	FRotator ShotRotation = (LineEnd - LineStart).Rotation();
+	FVector ShotLocation = HookSpawnPoint->GetComponentLocation();
+
+	// 훅 투사체 스폰
+	GrapplingHookInstance = GetWorld()->SpawnActor<AFrogGrapplingHook>(GrapplingHookClass, ShotLocation, ShotRotation);
+	
+	/* 케이블 연결 */
+	if (GrapplingHookInstance)
+	{	
+		GrapplingHookInstance->SetOwner(this); // 소유자 설정
+		
+		// 케이블 시작점 → 캐릭터의 HookSpawnPoint
+		GrapplingHookInstance->HookCable->AttachToComponent(HookSpawnPoint, FAttachmentTransformRules::KeepRelativeTransform);
+		GrapplingHookInstance->HookCable->bAttachStart = true;
+
+		// 케이블 끝점 → GrapplingHookInstance (Projectile)
+		GrapplingHookInstance->HookCable->SetAttachEndToComponent(GrapplingHookInstance->GetRootComponent());
+		GrapplingHookInstance->HookCable->bAttachEnd = true;
+	}
+
+	// 일정 시간 후 훅 발사 종료
+	GetWorldTimerManager().SetTimer(ToungeTimerHandle, this, &AFrogPlayerCharacter::DoToungeLickEnd, 0.4f, false);
+}
+
+void AFrogPlayerCharacter::DoToungeLickEnd()
+{
+	if (GrapplingHookInstance && GrapplingHookInstance->IsValidLowLevel())
+	{
+		GrapplingHookInstance->DestroyProjectile();
+		GrapplingHookInstance = nullptr; // 참조 정리
+	}
+
+	bCanToungeLick = true;
+	bIsToungeAttaching = false;
+}
+
+void AFrogPlayerCharacter::DoToungeEat(AActor& Target)
+{
+	UE_LOG(LogTemp, Warning, TEXT("냠"));
+
+	//UPrimitiveComponent* TargetColider = Target.FindComponentByClass<UStaticMeshComponent>();
+	//TargetColider->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 충돌 비활성화
+
+
+	//DoToungeLickEnd();
+}
+
+void AFrogPlayerCharacter::DoToungeGrapple()
+{
+	//GrapplePull 이식
+	if (!bIsToungeAttaching) return;
+	UE_LOG(LogTemp, Warning, TEXT("대롱"));
+
+
+	DoToungeLickEnd();
+}
+
+
+void AFrogPlayerCharacter::OnToungeAttached(AActor& Target)
+{
+	bIsToungeAttaching = true;
+	GetWorldTimerManager().ClearTimer(ToungeTimerHandle);
+
+	if (Target.FindComponentByClass<UFrogEdibleActorComponent>()) 
+	{
+		DoToungeEat(Target);
+	}
+	else 
+	{
+		//bool 모시깽이 여기서 바꿔주고 ToungeGrapple은 그뭐냐...Tick에서 호출ㄱ
+		//DoToungeGrapple();
 	}
 }

@@ -52,6 +52,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Input Action")
 	class UInputAction* AttackAction;
 
+	UPROPERTY(EditAnywhere, Category = "Input Action")
+	class UInputAction* LickAction;
+
 	/* Item */
 	UPROPERTY(EditAnywhere, Category = "Gear")
 	bool HasSword = false;
@@ -135,9 +138,27 @@ private:
 	void DoAttackStart();
 	void DoAttackEnd();
 
+	/* Tounge */
+	bool bCanToungeLick = true;
+	bool bCanToungeEat = false;
+	bool bCanToungeGrapple = false;
+	bool bIsToungeAttaching = false;
+	FTimerHandle ToungeTimerHandle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gear", meta = (AllowPrivateAccess = "true"))
+	USceneComponent* TongueSpawnPoint;
+
+	void DoToungeLickStart();
+	void DoToungeLickEnd();
+
+	void DoToungeEat(AActor& Target);
+	void DoToungeGrapple();
+
 protected:
 	void Landed(const FHitResult& Hit) override;
 
 public:
 	void OnHookAttached(const FVector& Target); // 그래플링 훅이 물체에 붙었을 때 호출되는 함수
+
+	void OnToungeAttached(AActor& Target);
 };
