@@ -465,11 +465,12 @@ void AFrogPlayerCharacter::DoToungeEat(AActor& Target)
 {
 	UE_LOG(LogTemp, Warning, TEXT("냠"));
 
-	//UPrimitiveComponent* TargetColider = Target.FindComponentByClass<UStaticMeshComponent>();
-	//TargetColider->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 충돌 비활성화
-
-
+	// 혀를 발사한 캐릭터에게 복귀
+	GrapplingHookInstance->ReturnProjectile();
+	
+	// 복귀 체크 후 돌아오면 호출하게 함
 	//DoToungeLickEnd();
+
 }
 
 void AFrogPlayerCharacter::DoToungeGrapple()
@@ -494,7 +495,6 @@ void AFrogPlayerCharacter::OnToungeAttached(AActor& Target)
 	}
 	else 
 	{
-		//bool 모시깽이 여기서 바꿔주고 ToungeGrapple은 그뭐냐...Tick에서 호출ㄱ
 		//DoToungeGrapple();
 	}
 }

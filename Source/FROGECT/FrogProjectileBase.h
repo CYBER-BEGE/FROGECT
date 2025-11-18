@@ -34,4 +34,17 @@ public:
 	void DestroyProjectile();
 
 	void BounceProjectile();
+
+	void ReturnProjectile();
+
+private:
+	/** Tick에서 실제 위치 갱신 처리 */
+	void HandleReturn(float DeltaTime);
+
+	/** Return 속도 */
+	UPROPERTY(EditAnywhere, Category = "Return")
+	float ReturnSpeed = 5000.f;
+
+	/** Return 중인지 체크 */
+	bool bReturning = false;
 };
