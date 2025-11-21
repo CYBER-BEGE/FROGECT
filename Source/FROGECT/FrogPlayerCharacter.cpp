@@ -526,7 +526,7 @@ void AFrogPlayerCharacter::DoShootStart()
 	FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 150.f + FVector(0, 0, 50);
 	FRotator SpawnRotation = GetControlRotation();
 
-	// Spawn
+	// Spawn //
 	AActor* Spawned = World->SpawnActor<AActor>(StoredObjectClass, SpawnLocation, SpawnRotation);
 
 	if (Spawned)
