@@ -44,6 +44,16 @@ void AFrogGrapplingHook::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, U
 			// 낼룸
 			Other->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
 			Player->OnToungeAttached(*Other);
+
+			/*
+			// 오브젝트 클래스 저장
+			Player->StoredObjectClass = Other->GetClass();
+
+			// 원본 파괴
+			Other->Destroy();
+			*/
+
+			Player->PendingEdibleActor = Other;
 		}
 		else
 		{

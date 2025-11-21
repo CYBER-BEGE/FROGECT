@@ -501,5 +501,11 @@ void AFrogPlayerCharacter::OnToungeReturned()
 {
 	UE_LOG(LogTemp, Warning, TEXT("먹었어요"));
 
+	// Destroy before storing
+	StoredObjectClass = PendingEdibleActor->GetClass();
+
+	PendingEdibleActor->Destroy();
+	PendingEdibleActor = nullptr;
+
 	DoToungeLickEnd();
 }

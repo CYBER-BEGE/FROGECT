@@ -164,4 +164,11 @@ public:
 
 	UFUNCTION()
 	void OnToungeReturned();
+
+	UPROPERTY()
+	AActor* PendingEdibleActor = nullptr;
+
+	UPROPERTY()
+	TSubclassOf<AActor> StoredObjectClass = nullptr;
+
 };
