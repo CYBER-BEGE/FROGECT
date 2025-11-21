@@ -55,6 +55,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Input Action")
 	class UInputAction* LickAction;
 
+	UPROPERTY(EditAnywhere, Category = "Input Action")
+	class UInputAction* ShootAction;
+
 	/* Item */
 	UPROPERTY(EditAnywhere, Category = "Gear")
 	bool HasSword = false;
@@ -154,12 +157,16 @@ private:
 	void DoToungeEat(AActor& Target);
 	void DoToungeGrapple();
 
+	/* Shoot */
+	void DoShootStart();
+
 protected:
 	void Landed(const FHitResult& Hit) override;
 
 public:
 	void OnHookAttached(const FVector& Target); // 그래플링 훅이 물체에 붙었을 때 호출되는 함수
 
+	/* Tounge */
 	void OnToungeAttached(AActor& Target);
 
 	UFUNCTION()

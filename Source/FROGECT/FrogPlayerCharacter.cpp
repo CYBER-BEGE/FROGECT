@@ -118,6 +118,9 @@ void AFrogPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 		// Tounge Lick
 		EnhancedInputComponent->BindAction(LickAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoToungeLickStart);
+
+		// Shoot
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoShootStart);
 	}
 	else
 	{
@@ -481,7 +484,6 @@ void AFrogPlayerCharacter::DoToungeGrapple()
 	DoToungeLickEnd();
 }
 
-
 void AFrogPlayerCharacter::OnToungeAttached(AActor& Target)
 {
 	bIsToungeAttaching = true;
@@ -508,4 +510,36 @@ void AFrogPlayerCharacter::OnToungeReturned()
 	PendingEdibleActor = nullptr;
 
 	DoToungeLickEnd();
+}
+
+void AFrogPlayerCharacter::DoShootStart()
+{
+	if (!StoredObjectClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No stored object to shoot."));
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 150.f + FVector(0, 0, 50);
+	FRotator SpawnRotation = GetControlRotation();
+
+	// Spawn
+	AActor* Spawned = World->SpawnActor<AActor>(StoredObjectClass, SpawnLocation, SpawnRotation);
+
+	if (Spawned)
+	{
+		// If the spawned object has physics enabled → add impulse to launch it
+		UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(Spawned->GetRootComponent());
+		if (RootComp && RootComp->IsSimulatingPhysics())
+		{
+			FVector ShootDirection = GetActorForwardVector();
+			RootComp->AddImpulse(ShootDirection * 2000.f); // 힘 조절 가능
+		}
+
+		// 슬롯 비우기
+		StoredObjectClass = nullptr;
+	}
 }
