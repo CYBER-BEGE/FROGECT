@@ -161,4 +161,7 @@ public:
 	void OnHookAttached(const FVector& Target); // 그래플링 훅이 물체에 붙었을 때 호출되는 함수
 
 	void OnToungeAttached(AActor& Target);
+
+	UFUNCTION()
+	void OnToungeReturned();
 };

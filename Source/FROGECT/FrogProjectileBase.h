@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Delegates/DelegateCombinations.h" 
 #include "FrogProjectileBase.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnProjectileReturned);
 
 UCLASS()
 class FROGECT_API AFrogProjectileBase : public AActor
@@ -36,6 +39,9 @@ public:
 	void BounceProjectile();
 
 	void ReturnProjectile();
+
+	UPROPERTY(EditAnywhere)
+	FOnProjectileReturned OnProjectileReturned;
 
 private:
 	/** Tick에서 실제 위치 갱신 처리 */

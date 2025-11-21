@@ -435,6 +435,7 @@ void AFrogPlayerCharacter::DoToungeLickStart()
 	if (GrapplingHookInstance)
 	{	
 		GrapplingHookInstance->SetOwner(this); // 소유자 설정
+		GrapplingHookInstance->OnProjectileReturned.AddDynamic(this, &AFrogPlayerCharacter::OnToungeReturned);
 		
 		// 케이블 시작점 → 캐릭터의 HookSpawnPoint
 		GrapplingHookInstance->HookCable->AttachToComponent(HookSpawnPoint, FAttachmentTransformRules::KeepRelativeTransform);
@@ -467,9 +468,6 @@ void AFrogPlayerCharacter::DoToungeEat(AActor& Target)
 
 	// 혀를 발사한 캐릭터에게 복귀
 	GrapplingHookInstance->ReturnProjectile();
-	
-	// 복귀 체크 후 돌아오면 호출하게 함
-	//DoToungeLickEnd();
 
 }
 
@@ -497,4 +495,11 @@ void AFrogPlayerCharacter::OnToungeAttached(AActor& Target)
 	{
 		//DoToungeGrapple();
 	}
+}
+
+void AFrogPlayerCharacter::OnToungeReturned()
+{
+	UE_LOG(LogTemp, Warning, TEXT("먹었어요"));
+
+	DoToungeLickEnd();
 }

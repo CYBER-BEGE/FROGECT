@@ -90,6 +90,9 @@ void AFrogProjectileBase::HandleReturn(float DeltaTime)
 	if (FVector::DistSquared(NewLocation, OwnerLocation) < FMath::Square(100.f))
 	{
 		// 플레이어 도착 처리
+		OnProjectileReturned.Broadcast();
+
 		Destroy();
+		bReturning = false;
 	}
 }

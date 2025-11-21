@@ -3,6 +3,7 @@
 
 #include "FrogGrapplingHook.h"
 #include "FrogPlayerCharacter.h"
+#include "FrogEdibleActorComponent.h"
 
 // Sets default values
 AFrogGrapplingHook::AFrogGrapplingHook()
@@ -35,10 +36,20 @@ void AFrogGrapplingHook::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, U
 	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
 
 	AFrogPlayerCharacter* Player = Cast<AFrogPlayerCharacter>(GetOwner());
-	if (Player)
+
+	if (!Player || !Other) return;
 	{
-		//Player->OnHookAttached(Hit.ImpactPoint);
-		Player->OnToungeAttached(*Hit.GetActor());
+		if (Other->FindComponentByClass<UFrogEdibleActorComponent>())
+		{
+			// 낼룸
+			Other->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
+			Player->OnToungeAttached(*Other);
+		}
+		else
+		{
+			// 그래플링
+			Player->OnHookAttached(Hit.ImpactPoint);
+		}
 
 		UE_LOG(LogTemp, Warning, TEXT("Hook Attached at Location: %s"), *Hit.ImpactPoint.ToString());
 	}
