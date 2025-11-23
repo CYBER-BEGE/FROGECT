@@ -11,6 +11,7 @@
 #include "FrogGrapplingHook.h"
 #include "Kismet/GameplayStatics.h"
 #include "FrogEdibleActorComponent.h"
+#include "FrogSpitProjectile.h"
 
 // Sets default values
 AFrogPlayerCharacter::AFrogPlayerCharacter()
@@ -120,7 +121,7 @@ void AFrogPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 		EnhancedInputComponent->BindAction(LickAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoToungeLickStart);
 
 		// Shoot
-		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoShootStart);
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &AFrogPlayerCharacter::DoSpitStart);
 	}
 	else
 	{
@@ -379,6 +380,7 @@ void AFrogPlayerCharacter::GrapplePull()
 	}
 }
 
+/* Attack 삭제예정 */
 void AFrogPlayerCharacter::DoAttackStart()
 {
 	if (!HasSword || !bCanAttack) return; // 검이 없거나 공격 딜레이 중일 시 종료
@@ -407,8 +409,6 @@ void AFrogPlayerCharacter::DoAttackEnd()
 	}
 }
 
-// 이 함수에서 해야 하는 일: 혓바닥 연결
-// 매달리기/끌어당기기는 별도 구현
 void AFrogPlayerCharacter::DoToungeLickStart()
 {
 	if (!bCanToungeLick) return;
@@ -463,11 +463,12 @@ void AFrogPlayerCharacter::DoToungeLickEnd()
 
 	bCanToungeLick = true;
 	bIsToungeAttaching = false;
+	EatingActor = nullptr;
 }
 
-void AFrogPlayerCharacter::DoToungeEat(AActor& Target)
+void AFrogPlayerCharacter::DoToungeEat()
 {
-	UE_LOG(LogTemp, Warning, TEXT("냠"));
+	UE_LOG(LogTemp, Warning, TEXT("먹기"));
 
 	// 혀를 발사한 캐릭터에게 복귀
 	GrapplingHookInstance->ReturnProjectile();
@@ -478,9 +479,9 @@ void AFrogPlayerCharacter::DoToungeGrapple()
 {
 	//GrapplePull 이식
 	if (!bIsToungeAttaching) return;
-	UE_LOG(LogTemp, Warning, TEXT("대롱"));
+	UE_LOG(LogTemp, Warning, TEXT("매달리기"));
 
-
+	// 이걸 바로 호출하면 도착 전에 사라짐
 	DoToungeLickEnd();
 }
 
@@ -491,7 +492,7 @@ void AFrogPlayerCharacter::OnToungeAttached(AActor& Target)
 
 	if (Target.FindComponentByClass<UFrogEdibleActorComponent>()) 
 	{
-		DoToungeEat(Target);
+		DoToungeEat();
 	}
 	else 
 	{
@@ -504,42 +505,53 @@ void AFrogPlayerCharacter::OnToungeReturned()
 	UE_LOG(LogTemp, Warning, TEXT("먹었어요"));
 
 	// Destroy before storing
-	StoredObjectClass = PendingEdibleActor->GetClass();
+	//StoredObjectClass = PendingEdibleActor->GetClass();
 
-	PendingEdibleActor->Destroy();
-	PendingEdibleActor = nullptr;
+	EatingActor->Destroy();
 
-	DoToungeLickEnd();
+	//DoToungeLickEnd(); // 먹고 있는 동안은 그래플링도 먹기도 X 
 }
 
-void AFrogPlayerCharacter::DoShootStart()
+void AFrogPlayerCharacter::DoSpitStart()
 {
-	if (!StoredObjectClass)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No stored object to shoot."));
-		return;
-	}
+	if (EatingActor == nullptr || bCanToungeLick) return;
 
 	UWorld* World = GetWorld();
 	if (!World) return;
 
-	FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 150.f + FVector(0, 0, 50);
-	FRotator SpawnRotation = GetControlRotation();
+	FVector SpawnLocation = TongueSpawnPoint->GetComponentLocation();
+	FRotator SpawnRotation = Controller->GetControlRotation();
 
-	// Spawn //
-	AActor* Spawned = World->SpawnActor<AActor>(StoredObjectClass, SpawnLocation, SpawnRotation);
-
-	if (Spawned)
+	// 투사체 스폰
+	AFrogSpitProjectile* SpitProjectile = SpitProjectile = World->SpawnActor<AFrogSpitProjectile>(AFrogSpitProjectile::StaticClass(), SpawnLocation, SpawnRotation);
+	
+	if (SpitProjectile)
 	{
-		// If the spawned object has physics enabled → add impulse to launch it
-		UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(Spawned->GetRootComponent());
-		if (RootComp && RootComp->IsSimulatingPhysics())
+		UFrogEdibleActorComponent* EdibleActorComponent = EatingActor->FindComponentByClass<UFrogEdibleActorComponent>();
+		if (EdibleActorComponent)
 		{
-			FVector ShootDirection = GetActorForwardVector();
-			RootComp->AddImpulse(ShootDirection * 2000.f); // 힘 조절 가능
+			SpitProjectile->GetEdibleActorData(EdibleActorComponent);
+			SpitProjectile->SetActorLocationAndRotation(SpawnLocation, SpawnRotation);
 		}
 
-		// 슬롯 비우기
-		StoredObjectClass = nullptr;
+		// 발사
+		if (UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(SpitProjectile->GetRootComponent()))
+		{
+			// Physics 활성화
+			RootComp->SetSimulatePhysics(true);
+			RootComp->SetEnableGravity(false);
+
+			// 발사 방향과 힘
+			FVector ShootDir = TongueSpawnPoint->GetForwardVector();
+			float ImpulseStrength = 2000.f; // 힘 조절 가능
+
+			RootComp->AddImpulse(ShootDir * ImpulseStrength, NAME_None, true);
+		}
+		else 
+		{
+			UE_LOG(LogTemp, Warning, TEXT("투사체 좃댓어"));
+		}
 	}
+
+	DoToungeLickEnd();
 }

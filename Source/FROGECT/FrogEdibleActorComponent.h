@@ -6,6 +6,14 @@
 #include "Components/ActorComponent.h"
 #include "FrogEdibleActorComponent.generated.h"
 
+UENUM()
+enum class EEdibleColliderType : uint8
+{
+	Capsule,
+	Sphere,
+	Box,
+	Unknown
+};
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FROGECT_API UFrogEdibleActorComponent : public UActorComponent
@@ -24,5 +32,13 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
+public:
+	UStaticMeshComponent* MeshData;
+	UMaterialInterface* MaterialData;
+	UPrimitiveComponent* ColliderData;
+	FVector ScaleData;
+
+	//Owner Actor의 정보 저장
+	void CacheEdibleActorData();
+
 };

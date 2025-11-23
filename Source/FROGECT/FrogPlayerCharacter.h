@@ -30,7 +30,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
-	/* Input Action */
+	/* Input Action */ 
 	UPROPERTY(EditAnywhere, Category = "Input Action")
 	class UInputAction* MoveAction;
 
@@ -124,6 +124,7 @@ private:
 	void DoHookEnd();
 	void GrapplePull(); // 그래플링 훅에 당겨지는 함수
 
+	// Attack 관련 코드 삭제 및 이사 예정
 	/* Attack */
 	FTimerHandle AttackTimerHandle;
 	bool bCanAttack = true;
@@ -154,11 +155,11 @@ private:
 	void DoToungeLickStart();
 	void DoToungeLickEnd();
 
-	void DoToungeEat(AActor& Target);
+	void DoToungeEat();
 	void DoToungeGrapple();
 
-	/* Shoot */
-	void DoShootStart();
+	/* Spit */
+	void DoSpitStart();
 
 protected:
 	void Landed(const FHitResult& Hit) override;
@@ -172,10 +173,11 @@ public:
 	UFUNCTION()
 	void OnToungeReturned();
 
-	UPROPERTY()
-	AActor* PendingEdibleActor = nullptr;
+	// 입 안에 넣은 액터
+	AActor* EatingActor = nullptr;
 
+	/*
 	UPROPERTY()
 	TSubclassOf<AActor> StoredObjectClass = nullptr;
-
+	*/
 };

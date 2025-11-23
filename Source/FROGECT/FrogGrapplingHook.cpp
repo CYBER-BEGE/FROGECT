@@ -29,6 +29,7 @@ void AFrogGrapplingHook::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	ToungeReturn(DeltaTime);
 }
 
 void AFrogGrapplingHook::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
@@ -45,22 +46,51 @@ void AFrogGrapplingHook::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, U
 			Other->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
 			Player->OnToungeAttached(*Other);
 
-			/*
-			// 오브젝트 클래스 저장
-			Player->StoredObjectClass = Other->GetClass();
-
-			// 원본 파괴
-			Other->Destroy();
-			*/
-
-			Player->PendingEdibleActor = Other;
+			Player->EatingActor = Other;
 		}
 		else
 		{
-			// 그래플링
+			// 매달리기
 			Player->OnHookAttached(Hit.ImpactPoint);
 		}
 
-		UE_LOG(LogTemp, Warning, TEXT("Hook Attached at Location: %s"), *Hit.ImpactPoint.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Tounge Attached at Location: %s"), *Hit.ImpactPoint.ToString());
+	}
+}
+
+void AFrogGrapplingHook::ReturnProjectile()
+{
+	if (!GetOwner()) return;
+	
+	UE_LOG(LogTemp, Warning, TEXT("Tounge returning to %s"), *GetOwner()->GetName());
+
+	bToungeReturning = true;
+
+	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// Tounge 속도 초기화
+	if (ProjectileMovement)
+	{
+		ProjectileMovement->Velocity = FVector::ZeroVector;
+	}
+}
+
+void AFrogGrapplingHook::ToungeReturn(float DeltaTime)
+{
+	if (!bToungeReturning || !GetOwner()) return;
+
+	FVector OwnerLocation = GetOwner()->GetActorLocation();
+	FVector Dir = (OwnerLocation - GetActorLocation()).GetSafeNormal();
+
+	// 매 프레임 위치 갱신
+	FVector NewLocation = GetActorLocation() + Dir * ReturnSpeed * DeltaTime;
+	SetActorLocation(NewLocation, true);
+
+	if (FVector::DistSquared(NewLocation, OwnerLocation) < FMath::Square(100.f))
+	{
+		OnProjectileReturned.Broadcast();
+
+		Destroy();
+		bToungeReturning = false;
 	}
 }
