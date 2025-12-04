@@ -34,15 +34,11 @@ void UFrogEdibleActorComponent::CacheEdibleActorData()
 	AActor* Owner = GetOwner();
 	if (!Owner) return;
 
-	MeshData = Owner->FindComponentByClass<UStaticMeshComponent>(); // 메시
-
-	MaterialData = MeshData->GetMaterial(0); // 머티리얼
-		
-	ColliderData = Owner->FindComponentByClass<UPrimitiveComponent>(); // 콜라이더
-
-	ScaleData = Owner->GetActorScale3D(); // 크기
+	CachedData.MeshData = Owner->FindComponentByClass<UStaticMeshComponent>(); // 메시
+	CachedData.MaterialData = CachedData.MeshData->GetMaterial(0); // 머티리얼
+	CachedData.ColliderData = Owner->FindComponentByClass<UPrimitiveComponent>(); // 콜라이더
+	CachedData.ScaleData = Owner->GetActorScale3D(); // 크기
 	
 	// 공격타입(적 투사체라면 있을거임)
 	// 그 외 추가되는 것들 반영(이펙트 파티클 등등)	
 }
-

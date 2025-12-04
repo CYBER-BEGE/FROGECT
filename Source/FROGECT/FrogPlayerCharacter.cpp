@@ -466,15 +466,6 @@ void AFrogPlayerCharacter::DoToungeLickEnd()
 	EatingActor = nullptr;
 }
 
-void AFrogPlayerCharacter::DoToungeEat()
-{
-	UE_LOG(LogTemp, Warning, TEXT("먹기"));
-
-	// 혀를 발사한 캐릭터에게 복귀
-	GrapplingHookInstance->ReturnProjectile();
-
-}
-
 void AFrogPlayerCharacter::DoToungeGrapple()
 {
 	//GrapplePull 이식
@@ -482,7 +473,7 @@ void AFrogPlayerCharacter::DoToungeGrapple()
 	UE_LOG(LogTemp, Warning, TEXT("매달리기"));
 
 	// 이걸 바로 호출하면 도착 전에 사라짐
-	DoToungeLickEnd();
+	//DoToungeLickEnd();
 }
 
 void AFrogPlayerCharacter::OnToungeAttached(AActor& Target)
@@ -492,18 +483,20 @@ void AFrogPlayerCharacter::OnToungeAttached(AActor& Target)
 
 	if (Target.FindComponentByClass<UFrogEdibleActorComponent>()) 
 	{
-		DoToungeEat();
+		UE_LOG(LogTemp, Warning, TEXT("먹기"));
+
+		// 혀를 발사한 캐릭터에게 복귀
+		GrapplingHookInstance->ReturnProjectile();
 	}
 	else 
 	{
-		//DoToungeGrapple();
+		//SetToungeGrapplingValue();
 	}
 }
 
 void AFrogPlayerCharacter::OnToungeReturned()
 {
 	UE_LOG(LogTemp, Warning, TEXT("먹었어요"));
-
 	// Destroy before storing
 	//StoredObjectClass = PendingEdibleActor->GetClass();
 
@@ -524,15 +517,21 @@ void AFrogPlayerCharacter::DoSpitStart()
 
 	// 투사체 스폰
 	AFrogSpitProjectile* SpitProjectile = SpitProjectile = World->SpawnActor<AFrogSpitProjectile>(AFrogSpitProjectile::StaticClass(), SpawnLocation, SpawnRotation);
-	
+	SpitProjectile->Owner = this;
+
 	if (SpitProjectile)
 	{
+		UE_LOG(LogTemp, Display, TEXT("SpitProjectile 있음"));
 		UFrogEdibleActorComponent* EdibleActorComponent = EatingActor->FindComponentByClass<UFrogEdibleActorComponent>();
+
 		if (EdibleActorComponent)
 		{
-			SpitProjectile->GetEdibleActorData(EdibleActorComponent);
+			UE_LOG(LogTemp, Display, TEXT("EdibleActorComponent 있음"));
+
+			SpitProjectile->CloneEdibleActor(EdibleActorComponent);
 			SpitProjectile->SetActorLocationAndRotation(SpawnLocation, SpawnRotation);
 		}
+		else UE_LOG(LogTemp, Warning, TEXT("EdibleActorComponent 없음"));
 
 		// 발사
 		if (UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(SpitProjectile->GetRootComponent()))
@@ -549,7 +548,7 @@ void AFrogPlayerCharacter::DoSpitStart()
 		}
 		else 
 		{
-			UE_LOG(LogTemp, Warning, TEXT("투사체 좃댓어"));
+			UE_LOG(LogTemp, Warning, TEXT("투사체 Root 없음"));
 		}
 	}
 

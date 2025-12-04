@@ -2,7 +2,6 @@
 
 
 #include "FrogProjectileBase.h"
-#include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 
 // Sets default values

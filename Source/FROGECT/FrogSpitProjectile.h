@@ -27,11 +27,24 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	UStaticMeshComponent* Mesh;
-	UPrimitiveComponent* Collider;
+	UStaticMeshComponent* Mesh = nullptr;
+	UPrimitiveComponent* Collider = nullptr;
 	FVector Scale;
 
+	FTimerHandle DestroyTimerHandle;
+	bool bHasHit = false;
+
+	void StartDestroyTimer();
+	UFUNCTION()
+	void OnProjectileHit(
+		UPrimitiveComponent* HitComp,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		FVector NormalImpulse,
+		const FHitResult& Hit);
+
 public:
-	void GetEdibleActorData(class UFrogEdibleActorComponent* EdibleActorComponent);
+	// Edible Actor 외형 값 복사
+	void CloneEdibleActor(class UFrogEdibleActorComponent* EdibleActorComponent);
 
 };

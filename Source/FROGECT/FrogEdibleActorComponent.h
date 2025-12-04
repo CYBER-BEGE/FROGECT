@@ -6,13 +6,17 @@
 #include "Components/ActorComponent.h"
 #include "FrogEdibleActorComponent.generated.h"
 
-UENUM()
-enum class EEdibleColliderType : uint8
+// Edible Actor 외형 값 저장하는 구조체
+USTRUCT(BlueprintType)
+struct FEdibleActorData
 {
-	Capsule,
-	Sphere,
-	Box,
-	Unknown
+	GENERATED_BODY()
+
+public:
+	UStaticMeshComponent* MeshData = nullptr;
+	UMaterialInterface* MaterialData = nullptr;
+	UPrimitiveComponent* ColliderData = nullptr;
+	FVector ScaleData = FVector(1.f);
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -32,13 +36,12 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-public:
-	UStaticMeshComponent* MeshData;
-	UMaterialInterface* MaterialData;
-	UPrimitiveComponent* ColliderData;
-	FVector ScaleData;
+private:
+	FEdibleActorData CachedData;
 
 	//Owner Actor의 정보 저장
 	void CacheEdibleActorData();
 
+public:
+	const FEdibleActorData& GetEdibleData() const { return CachedData; }
 };

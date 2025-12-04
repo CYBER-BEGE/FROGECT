@@ -40,12 +40,12 @@ void AFrogGrapplingHook::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, U
 
 	if (!Player || !Other) return;
 	{
-		if (Other->FindComponentByClass<UFrogEdibleActorComponent>())
+		if (Other->FindComponentByClass<UFrogEdibleActorComponent>()) // 이럴 필요가 없잖아 애초에 다른걸 호출하던가
 		{
 			// 낼룸
 			Other->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
-			Player->OnToungeAttached(*Other);
 
+			Player->OnToungeAttached(*Other);
 			Player->EatingActor = Other;
 		}
 		else

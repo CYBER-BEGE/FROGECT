@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Delegates/DelegateCombinations.h" 
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "FrogProjectileBase.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnProjectileReturned);
