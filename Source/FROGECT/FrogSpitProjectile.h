@@ -36,12 +36,7 @@ private:
 
 	void StartDestroyTimer();
 	UFUNCTION()
-	void OnProjectileHit(
-		UPrimitiveComponent* HitComp,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComp,
-		FVector NormalImpulse,
-		const FHitResult& Hit);
+	void OnSpitProjectileHit(const FHitResult& ImpactResult);
 
 public:
 	// Edible Actor 외형 값 복사

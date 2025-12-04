@@ -512,7 +512,7 @@ void AFrogPlayerCharacter::DoSpitStart()
 	UWorld* World = GetWorld();
 	if (!World) return;
 
-	FVector SpawnLocation = TongueSpawnPoint->GetComponentLocation();
+	FVector SpawnLocation = TongueSpawnPoint->GetComponentLocation() + TongueSpawnPoint->GetForwardVector() * 50.f;;
 	FRotator SpawnRotation = Controller->GetControlRotation();
 
 	// 투사체 스폰
@@ -521,7 +521,7 @@ void AFrogPlayerCharacter::DoSpitStart()
 
 	if (SpitProjectile)
 	{
-		UE_LOG(LogTemp, Display, TEXT("SpitProjectile 있음"));
+		UE_LOG(LogTemp, Display, TEXT("SpitProjectile 있음 있지? 있다고말해"));
 		UFrogEdibleActorComponent* EdibleActorComponent = EatingActor->FindComponentByClass<UFrogEdibleActorComponent>();
 
 		if (EdibleActorComponent)
@@ -534,22 +534,10 @@ void AFrogPlayerCharacter::DoSpitStart()
 		else UE_LOG(LogTemp, Warning, TEXT("EdibleActorComponent 없음"));
 
 		// 발사
-		if (UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(SpitProjectile->GetRootComponent()))
-		{
-			// Physics 활성화
-			RootComp->SetSimulatePhysics(true);
-			RootComp->SetEnableGravity(false);
+		FVector ShootDir = TongueSpawnPoint->GetForwardVector();
+		float SpitSpeed = 1000.f; 
+		SpitProjectile->FireProjectile(ShootDir, SpitSpeed);
 
-			// 발사 방향과 힘
-			FVector ShootDir = TongueSpawnPoint->GetForwardVector();
-			float ImpulseStrength = 2000.f; // 힘 조절 가능
-
-			RootComp->AddImpulse(ShootDir * ImpulseStrength, NAME_None, true);
-		}
-		else 
-		{
-			UE_LOG(LogTemp, Warning, TEXT("투사체 Root 없음"));
-		}
 	}
 
 	DoToungeLickEnd();

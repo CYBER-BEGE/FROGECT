@@ -39,4 +39,5 @@ public:
 
 	void BounceProjectile();
 
+	void FireProjectile(const FVector& Direction, float Speed);
 };

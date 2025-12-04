@@ -13,26 +13,40 @@
 AFrogSpitProjectile::AFrogSpitProjectile()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	ProjectileMovement->ProjectileGravityScale = 0.0f;
 }
 
 void AFrogSpitProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// RootComponent가 PrimitiveComponent면 Hit 이벤트 바인딩
-	if (UPrimitiveComponent* PrimRoot = Cast<UPrimitiveComponent>(RootComponent))
+	UE_LOG(LogTemp, Display, TEXT("%s: 스폰됨"), *this->GetActorLabel());
+
+	if (Owner) 
 	{
-		PrimRoot->OnComponentHit.AddDynamic(this, &AFrogSpitProjectile::OnProjectileHit);
+		UE_LOG(LogTemp, Display, TEXT("%s: 발사자: %s"), *this->GetActorLabel(), *Owner->GetActorLabel());
+	}
+	else UE_LOG(LogTemp, Warning, TEXT("%s: No Owner"), *this->GetActorLabel());
+
+	ProjectileMovement->OnProjectileStop.AddDynamic(this, &AFrogSpitProjectile::OnSpitProjectileHit);
+	
+	
+	
+	
+	// RootComponent가 PrimitiveComponent면 Hit 이벤트 바인딩
+	//if (UPrimitiveComponent* PrimRoot = Cast<UPrimitiveComponent>(RootComponent))
+	//{
+		//PrimRoot->OnComponentHit.AddDynamic(this, &AFrogSpitProjectile::OnProjectileHit);
+		//if (Owner) PrimRoot->IgnoreActorWhenMoving(Owner, true);
 
 		/*
-		PrimRoot->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		PrimRoot->SetCollisionResponseToAllChannels(ECR_Block);
-		PrimRoot->SetNotifyRigidBodyCollision(true);
+
 
 		// 날아갈 때 Physics는 끄고 Gravity도 끔
 		PrimRoot->SetSimulatePhysics(true);
 		PrimRoot->SetEnableGravity(false);
-		*/
+		
 	}
 
 	StartDestroyTimer(); // 스폰 시 5초 자동 파괴 타이머
@@ -49,10 +63,16 @@ void AFrogSpitProjectile::StartDestroyTimer()
 	UE_LOG(LogTemp, Warning, TEXT("%s: DestroyTimer 호출됨"), *this->GetActorLabel());
 
 	// 발사 후 5초 뒤 투사체 파괴(투사체 수명)
-	GetWorldTimerManager().SetTimer(DestroyTimerHandle, this, &AFrogSpitProjectile::DestroyProjectile, 2.0f, false);
+	GetWorldTimerManager().SetTimer(DestroyTimerHandle, this, &AFrogSpitProjectile::DestroyProjectile, 2.0f, false);*/
 }
 
+void AFrogSpitProjectile::OnSpitProjectileHit(const FHitResult& ImpactResult)
+{
+	AActor* HitActor = ImpactResult.GetActor();
+	UE_LOG(LogTemp, Display, TEXT("%s: %s와 충돌함"), *this->GetActorLabel(), *HitActor->GetActorLabel());
+}
 
+/*
 void AFrogSpitProjectile::OnProjectileHit(
 
 	UPrimitiveComponent* HitComp,
@@ -61,13 +81,15 @@ void AFrogSpitProjectile::OnProjectileHit(
 	FVector NormalImpulse,
 	const FHitResult& Hit)
 {
-	if (bHasHit || !HitComp) return; // 이미 Hit 처리했으면 무시
-
+	//if (bHasHit || !HitComp) return; // 이미 Hit 처리했으면 무시
+	UE_LOG(LogTemp, Display, TEXT("%s: %s와 충돌함"), *this->GetActorLabel(), *OtherActor->GetActorLabel());
+	
 	if (Owner) 
 	{
 		UE_LOG(LogTemp, Display, TEXT("Owner: %s"), *Owner->GetActorLabel());
 	}
 	else UE_LOG(LogTemp, Display, TEXT("No Owner"));
+
 	UE_LOG(LogTemp, Display, TEXT("뱉은거랑 %s랑 충돌 있음"), *OtherActor->GetActorLabel());
 
 	bHasHit = true; // 최초 Hit 처리
@@ -88,7 +110,7 @@ void AFrogSpitProjectile::OnProjectileHit(
 
 	// 타이머 재시작 (충돌 후 5초 뒤 파괴)
 	StartDestroyTimer();
-}
+}*/
 
 void AFrogSpitProjectile::CloneEdibleActor(UFrogEdibleActorComponent* EdibleActorComponent)
 {
@@ -211,4 +233,7 @@ void AFrogSpitProjectile::CloneEdibleActor(UFrogEdibleActorComponent* EdibleActo
 	// 3. Actor 스케일 적용 (전체 크기)
 	// ---------------------------
 	SetActorScale3D(Data.ScaleData);
+
+	ProjectileMovement->SetUpdatedComponent(RootComponent);
+
 }

@@ -52,3 +52,11 @@ void AFrogProjectileBase::BounceProjectile()
 		ProjectileMovement->Velocity = -ProjectileMovement->Velocity;
 	}
 }
+
+void AFrogProjectileBase::FireProjectile(const FVector& Direction, float Speed)
+{
+	if (!ProjectileMovement) return;
+
+	ProjectileMovement->Velocity = Direction * Speed;
+	ProjectileMovement->Activate();
+}
