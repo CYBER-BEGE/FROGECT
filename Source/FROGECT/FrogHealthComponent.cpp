@@ -2,6 +2,7 @@
 
 
 #include "FrogHealthComponent.h"
+#include "FrogCharacterBase.h"
 
 // Sets default values for this component's properties
 UFrogHealthComponent::UFrogHealthComponent()
@@ -14,16 +15,22 @@ UFrogHealthComponent::UFrogHealthComponent()
 	
 }
 
-
 // Called when the game starts
 void UFrogHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
 	
+	AActor* Owner = GetOwner(); // 이 컴포넌트가 속한 액터 가져오기
+	if (Owner)
+	{
+		AFrogCharacterBase* FrogCharacter = Cast<AFrogCharacterBase>(Owner);	// 액터를 AFrogCharacterBase로 캐스팅
+		if (FrogCharacter)														// 캐스팅 성공 시
+		{
+			Health = FrogCharacter->MaxHealth;									// FrogCharacterBase의 MaxHealth 값을 받아와 Health에 적용
+			UE_LOG(LogTemp, Warning, TEXT("Health initialized from Character MaxHealth: %f"), Health);
+		}
+	}
 }
-
 
 // Called every frame
 void UFrogHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -50,5 +57,6 @@ void UFrogHealthComponent::DamageTaken(AActor* AttackActor, float AttackPower)
 
 void UFrogHealthComponent::Heal()
 {
+
 }
 

@@ -29,7 +29,7 @@ public:
 	void Heal();
 
 private:
+	UPROPERTY(VisibleAnywhere, Category = "State")
 	float Health = 100.0f;
 
-	
 };

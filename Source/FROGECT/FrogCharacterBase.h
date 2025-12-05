@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "FrogHealthComponent.h"
 #include "FrogCharacterBase.generated.h"
 
 UCLASS()
@@ -26,7 +27,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-protected:
+	/* State */
 	UPROPERTY(EditAnywhere, Category = "State")
 	float MaxHealth = 100.0f;
 
@@ -35,5 +36,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "State")
 	float JumpPowerScale = 1.0f;
+
+protected:
+	/* Component */
+	UPROPERTY(EditAnywhere)
+	UFrogHealthComponent* HealthComponent;
 
 };
