@@ -72,6 +72,7 @@ private:
 	/* Move */
 	FVector2D MovementVector; // 인풋 받은 이동 벡터
 	void MoveInput(const struct FInputActionValue& Value);
+	void MoveInputEnd(const struct FInputActionValue& Value);
 	void DoMove(float Right, float Forward);
 
 	/* Look */

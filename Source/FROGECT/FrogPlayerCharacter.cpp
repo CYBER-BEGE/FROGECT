@@ -75,6 +75,7 @@ void AFrogPlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	//UE_LOG(LogTemp, Warning, TEXT("Velocity: %s"), *GetCharacterMovement()->Velocity.ToString());
+	//UE_LOG(LogTemp, Warning, TEXT("Velocity: %s"), *MovementVector.ToString());
 
 	GrapplePull();
 }
@@ -88,6 +89,7 @@ void AFrogPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 	{
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AFrogPlayerCharacter::MoveInput);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &AFrogPlayerCharacter::MoveInputEnd);
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AFrogPlayerCharacter::LookInput);
@@ -141,6 +143,11 @@ void AFrogPlayerCharacter::MoveInput(const FInputActionValue& Value)
 	MovementVector = Value.Get<FVector2D>();
 
 	DoMove(MovementVector.X, MovementVector.Y);
+}
+
+void AFrogPlayerCharacter::MoveInputEnd(const FInputActionValue& Value)
+{
+	MovementVector = FVector2D::ZeroVector;
 }
 
 void AFrogPlayerCharacter::DoMove(float Right, float Forward)
